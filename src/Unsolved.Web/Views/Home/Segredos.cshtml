@@ -1,0 +1,90 @@
+@{
+    ViewData["Title"] = "Gabarito dos segredos";
+    ViewData["Description"] = "Página interna: gabarito da caça aos segredos.";
+}
+
+@* Fora de indexação: é uma página "secreta". *@
+@section Styles {
+    <meta name="robots" content="noindex, nofollow" />
+}
+
+<section class="page-hero">
+    <div class="container">
+        <span class="stamp-mini">CONFIDENCIAL</span>
+        <h1>Gabarito da caça aos segredos</h1>
+        <p class="lead">Como resolver os 10 segredos, em 3 missões. Seu progresso aparece abaixo (lido da sessão atual).</p>
+        <p class="secret-progress" id="secret-progress">Progresso: <strong>0/10</strong></p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container narrow">
+
+        <article class="secret-mission">
+            <h2>🕵 Missão 1 — Reúna as pistas</h2>
+            <ol class="secret-list">
+                <li data-secret="clueA"><strong>Carimbo “CONFIDENCIAL”</strong> — no topo (hero), sobre a mascote. <em>Clique nele.</em></li>
+                <li data-secret="clueB"><strong>Carimbo “CASO ABERTO”</strong> — na chamada final (bloco “Modernize a forma…”). <em>Clique nele.</em></li>
+                <li data-secret="clueC"><strong>Código do rodapé</strong> — a linha <span class="mono">CASO Nº UNS-∞-000 · EM ABERTO</span>. <em>Clique na linha.</em></li>
+            </ol>
+            <p class="secret-hint">Concluída → revela a dica da Missão 2.</p>
+        </article>
+
+        <article class="secret-mission">
+            <h2>🔑 Missão 2 — Códigos secretos</h2>
+            <ol class="secret-list">
+                <li data-secret="pista"><strong>Digite <span class="mono">pista</span></strong> — em qualquer lugar (fora de campos de texto). Também faz as pistas piscarem.</li>
+                <li data-secret="sherlock"><strong>Digite <span class="mono">sherlock</span></strong>.</li>
+                <li data-secret="konami"><strong>Código Konami</strong> — <span class="mono">↑ ↑ ↓ ↓ ← → ← → B A</span>. Ativa o <em>Modo Cold Case</em>.</li>
+            </ol>
+            <p class="secret-hint">Concluída → revela a dica da Missão 3.</p>
+        </article>
+
+        <article class="secret-mission">
+            <h2>🔦 Missão 3 — O que está oculto</h2>
+            <ol class="secret-list">
+                <li data-secret="ink"><strong>Tinta invisível</strong> — no rodapé, na linha de copyright: <em>passe o mouse</em> pelo texto invisível à direita.</li>
+                <li data-secret="logo"><strong>Logo</strong> — <em>clique 5 vezes seguidas</em> (rápido) na logo “Unsolved” do cabeçalho.</li>
+                <li data-secret="fingerprint"><strong>Impressão digital escondida</strong> — no rodapé, abaixo do logo/tagline (à esquerda). Passe o mouse e <em>clique</em>.</li>
+            </ol>
+        </article>
+
+        <article class="secret-mission secret-final">
+            <h2>🏅 Segredo final (automático)</h2>
+            <ol class="secret-list">
+                <li data-secret="master"><strong>CASO ENCERRADO — Detetive Mestre</strong> — dispara sozinho ao encontrar os 9 anteriores.</li>
+            </ol>
+        </article>
+
+        <p class="disclaimer">Extra: abra o Console do navegador (F12) e veja a mensagem “ARQUIVO CONFIDENCIAL”.</p>
+
+        <div class="secret-actions">
+            <a class="btn btn-ghost btn-sm" href="/">Ir para a home caçar</a>
+            <button class="btn btn-ghost btn-sm" id="secret-reset" type="button">Zerar meu progresso</button>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Lê o mesmo estado da caça (sessionStorage) e marca o que já foi encontrado.
+        (function () {
+            "use strict";
+            function found() { try { return JSON.parse(sessionStorage.getItem("uns_secrets") || "[]"); } catch (e) { return []; } }
+            function render() {
+                var f = found();
+                document.querySelectorAll("[data-secret]").forEach(function (li) {
+                    var ok = f.indexOf(li.getAttribute("data-secret")) !== -1;
+                    li.classList.toggle("is-found", ok);
+                });
+                var p = document.getElementById("secret-progress");
+                if (p) p.innerHTML = "Progresso: <strong>" + f.length + "/10</strong>";
+            }
+            document.getElementById("secret-reset").addEventListener("click", function () {
+                try { sessionStorage.removeItem("uns_secrets"); sessionStorage.removeItem("uns_missions"); } catch (e) { }
+                render();
+            });
+            render();
+        })();
+    </script>
+}

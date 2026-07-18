@@ -1,0 +1,66 @@
+@{
+    ViewData["Title"] = "Segurança";
+    ViewData["Description"] = "Segurança na Unsolved: controle de acesso por função, registro de atividades, histórico de alterações e arquitetura preparada para LGPD.";
+
+    var items = new (string Icon, string Title, string Text)[]
+    {
+        ("key","Controle de acesso por função","Cada usuário acessa apenas o que sua função permite."),
+        ("shield","Proteção de informações sensíveis","Organização pensada para o cuidado com dados de investigação."),
+        ("audit","Registro de atividades","Arquitetura preparada para registrar ações relevantes no sistema."),
+        ("clock","Histórico de alterações","Possibilidade de acompanhar o que mudou em cada caso."),
+        ("database","Backups","Estrutura preparada para rotinas de backup dos dados."),
+        ("lock","Criptografia","Arquitetura preparada para proteção de dados em trânsito e repouso."),
+        ("team","Gestão de permissões","Definição de perfis e níveis de acesso por equipe."),
+        ("chart","Preparação para LGPD","Recursos planejados para apoiar a conformidade com a LGPD."),
+    };
+}
+
+<section class="page-hero page-hero-secure">
+    <div class="container">
+        <span class="section-tag">Segurança e confiança</span>
+        <h1>Responsabilidade sobre informações sensíveis</h1>
+        <p class="lead">A Unsolved lida com dados críticos de investigação. Por isso, sua arquitetura é preparada para os controles de segurança que órgãos e equipes exigem.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="notice reveal">
+            <strong>Transparência.</strong> Descrevemos abaixo capacidades planejadas e a arquitetura da plataforma.
+            Expressões como “arquitetura preparada para” e “recursos planejados” indicam funcionalidades
+            projetadas para evolução — não afirmações de recursos já homologados.
+        </div>
+
+        <div class="cards-grid features-grid">
+            @foreach (var it in items)
+            {
+                <article class="card feature-card reveal" data-lens>
+                    <span class="card-icon">@Html.Raw(Icons.Svg(it.Icon))</span>
+                    <h3>@it.Title</h3>
+                    <p>@it.Text</p>
+                </article>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="section section-alt">
+    <div class="container narrow">
+        <header class="section-head reveal"><h2>Princípios de segurança</h2></header>
+        <ul class="check-list check-list-lg reveal">
+            <li>Acesso mínimo necessário: cada função enxerga apenas o que precisa.</li>
+            <li>Rastreabilidade: possibilidade de auditar ações dentro do sistema.</li>
+            <li>Integridade: histórico de alterações para preservar o contexto dos casos.</li>
+            <li>Continuidade: estrutura preparada para backups e recuperação.</li>
+            <li>Privacidade desde o projeto: preparação para conformidade com a LGPD.</li>
+        </ul>
+    </div>
+</section>
+
+<section class="cta-band">
+    <div class="container cta-inner reveal">
+        <h2>Converse com a equipe sobre segurança</h2>
+        <p>Podemos detalhar a arquitetura e as possibilidades de implantação para o seu contexto.</p>
+        <a class="btn btn-primary btn-lg" href="/contato">Falar com a equipe</a>
+    </div>
+</section>

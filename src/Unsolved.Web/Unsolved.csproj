@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    Unsolved - protótipo acadêmico de gerenciamento de cold cases.
+    A interface usa dados em memória; o schema MySQL está em database/.
+    A integração via EF Core permanece como próxima etapa documentada.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Unsolved</RootNamespace>
+  </PropertyGroup>
+
+</Project>
+

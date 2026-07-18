@@ -1,0 +1,47 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Acessar sistema";
+    ViewData["Description"] = "Acesso à demonstração do sistema Unsolved.";
+}
+
+<section class="auth-wrap">
+    <div class="auth-card reveal">
+        <div class="auth-head">
+            <img src="~/images/logo.png" alt="Unsolved" width="64" height="64" />
+            <h1>Acessar o sistema</h1>
+            <p class="disclaimer">Acesso demonstrativo — use qualquer e-mail e senha válidos no formato.</p>
+        </div>
+
+        @* Formulário com validação de servidor (ModelState) + validação de cliente (validation.js) *@
+        <form asp-controller="Account" asp-action="Login" method="post" class="auth-form js-validate" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div class="field">
+                <label asp-for="Email">E-mail</label>
+                <input asp-for="Email" type="email" autocomplete="username" required />
+                <small class="field-error" data-error-for="Email">@Html.ValidationMessageFor(m => m.Email)</small>
+            </div>
+
+            <div class="field">
+                <label asp-for="Password">Senha</label>
+                <input asp-for="Password" type="password" autocomplete="current-password" required />
+                <small class="field-error" data-error-for="Password">@Html.ValidationMessageFor(m => m.Password)</small>
+            </div>
+
+            <label class="checkbox">
+                <input asp-for="RememberMe" type="checkbox" /> Manter conectado
+            </label>
+
+            <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+        </form>
+
+        <p class="auth-foot">
+            Não tem acesso? <a href="#" data-open-demo>Solicite uma demonstração</a>.
+        </p>
+    </div>
+
+    <div class="auth-aside" aria-hidden="true">
+        <span class="stamp">CONFIDENCIAL</span>
+        <p class="mono">CASO Nº UNS-2026-014</p>
+    </div>
+</section>

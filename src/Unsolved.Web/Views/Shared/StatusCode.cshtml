@@ -1,0 +1,24 @@
+@model ErrorViewModel
+@{
+    var is404 = Model.StatusCode == 404;
+    ViewData["Title"] = is404 ? "Caso não encontrado" : $"Erro {Model.StatusCode}";
+}
+<section class="error-page container">
+    <div class="error-badge" aria-hidden="true">@Model.StatusCode</div>
+    <span class="stamp-mini stamp-danger">@(is404 ? "PISTA PERDIDA" : "OCORRÊNCIA")</span>
+    <h1>@(is404 ? "Este caso não foi encontrado" : "Não foi possível concluir")</h1>
+    <p>
+        @if (is404)
+        {
+            <text>A página que você procura pode ter sido movida, arquivada ou nunca ter existido.</text>
+        }
+        else
+        {
+            <text>Houve um problema ao acessar este recurso (código @Model.StatusCode).</text>
+        }
+    </p>
+    <div class="error-actions">
+        <a class="btn btn-primary" href="/">Voltar ao início</a>
+        <a class="btn btn-ghost" href="/contato">Falar com a equipe</a>
+    </div>
+</section>

@@ -1,0 +1,148 @@
+@{
+    var title = ViewData["Title"] as string;
+    var fullTitle = string.IsNullOrEmpty(title) ? "Unsolved — Plataforma de gestão de investigações"
+                                                 : $"{title} — Unsolved";
+    var description = ViewData["Description"] as string
+        ?? "Centralize casos, organize evidências e conecte informações em uma plataforma criada para equipes de investigação.";
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>@fullTitle</title>
+
+    @* ---- SEO básico ---- *@
+    <meta name="description" content="@description" />
+    <meta name="theme-color" content="#201D12" />
+    <meta name="author" content="Unsolved" />
+    <link rel="canonical" href="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
+
+    @* ---- Open Graph (compartilhamento em redes) ---- *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Unsolved" />
+    <meta property="og:title" content="@fullTitle" />
+    <meta property="og:description" content="@description" />
+    <meta property="og:image" content="~/images/footer-banner.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    @* ---- Favicon ---- *@
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg" />
+
+    @* ---- Estilos (organizados por responsabilidade) ---- *@
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/responsive.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/animations.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    @* Token antifalsificação disponível para os envios via JavaScript (AJAX). *@
+    @Html.AntiForgeryToken()
+
+    @* Link de acessibilidade: pular direto para o conteúdo (navegação por teclado). *@
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+    @* ==================== CABEÇALHO FIXO ==================== *@
+    <header class="site-header" id="site-header">
+        <div class="container header-inner">
+            <a class="brand" href="/" aria-label="Página inicial da Unsolved">
+                <img src="~/images/logo.png" alt="Logo da Unsolved" class="brand-logo" id="brand-logo" width="48" height="48" />
+                <span class="brand-name">Unsolved</span>
+            </a>
+
+            <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
+                <ul>
+                    <li><a href="/">Início</a></li>
+                    <li><a href="/sobre">Sobre a plataforma</a></li>
+                    <li><a href="/recursos">Recursos</a></li>
+                    <li><a href="/#como-funciona">Como funciona</a></li>
+                    <li><a href="/seguranca">Segurança</a></li>
+                    <li><a href="/#para-quem">Para quem é</a></li>
+                    <li><a href="/contato">Contato</a></li>
+                </ul>
+                <a class="btn btn-primary nav-cta" href="#" data-open-demo>Solicitar demonstração</a>
+            </nav>
+
+            <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="Abrir menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+
+    @* ==================== CONTEÚDO ==================== *@
+    <main id="conteudo">
+        @RenderBody()
+    </main>
+
+    @* ==================== RODAPÉ ==================== *@
+    <footer class="site-footer">
+        <div class="footer-evidence-line" aria-hidden="true"></div>
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <img src="~/images/logo.png" alt="Logo da Unsolved" width="56" height="56" loading="lazy" />
+                <p class="footer-tagline">Transforme pistas em respostas.</p>
+                <p class="footer-note">Ferramenta de apoio à investigação — não substitui o trabalho humano.</p>
+            </div>
+
+            <nav class="footer-col" aria-label="Navegação do rodapé">
+                <h3>Navegação</h3>
+                <ul>
+                    <li><a href="/">Início</a></li>
+                    <li><a href="/sobre">Sobre</a></li>
+                    <li><a href="/recursos">Recursos</a></li>
+                    <li><a href="/seguranca">Segurança</a></li>
+                    <li><a href="/contato">Contato</a></li>
+                </ul>
+            </nav>
+
+            <div class="footer-col">
+                <h3>Contato</h3>
+                <ul>
+                    <li><a href="mailto:contato@unsolved.example">contato@@unsolved.example</a></li>
+                    <li><a href="tel:+551140000000">+55 (11) 4000-0000</a></li>
+                    <li><a href="/solicitar-demonstracao">Solicitar demonstração</a></li>
+                    <li><a href="/account/login">Acessar sistema</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="/privacidade">Política de privacidade</a></li>
+                    <li><a href="/termos">Termos de uso</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="container footer-bottom">
+            <p>&copy; @DateTime.Now.Year Unsolved. Todos os direitos reservados.</p>
+            @* Easter egg: código de caso escondido no rodapé. *@
+            <p class="footer-casecode" title="Arquivo confidencial">
+                CASO Nº <span class="mono">UNS-∞-000</span> · STATUS: <span class="stamp-mini">EM ABERTO</span>
+            </p>
+        </div>
+    </footer>
+
+    @* Botão "voltar ao topo" *@
+    <button class="back-to-top" id="back-to-top" aria-label="Voltar ao topo" hidden>↑</button>
+
+    @* Lupa que acompanha o cursor (easter egg discreto de hover) *@
+    <div class="cursor-lens" id="cursor-lens" aria-hidden="true"></div>
+
+    @* Carimbo "Confidencial" usado em animações *@
+    <div class="stamp-confidential" id="stamp-confidential" aria-hidden="true">CONFIDENCIAL</div>
+
+    @* Modal "Solicitar demonstração" (partial reutilizável) *@
+    <partial name="_DemoModal" />
+
+    @* ---- Scripts (defer: não bloqueiam o carregamento) ---- *@
+    <script src="~/js/menu.js" asp-append-version="true" defer></script>
+    <script src="~/js/validation.js" asp-append-version="true" defer></script>
+    <script src="~/js/forms.js" asp-append-version="true" defer></script>
+    <script src="~/js/interactions.js" asp-append-version="true" defer></script>
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+    <script src="~/js/mystery.js" asp-append-version="true" defer></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

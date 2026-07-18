@@ -1,0 +1,35 @@
+@{
+    ViewData["Title"] = "Contato";
+    ViewData["Description"] = "Fale com a equipe da Unsolved. Solicite uma demonstração ou tire suas dúvidas sobre a plataforma de gestão de investigações.";
+}
+
+<section class="page-hero">
+    <div class="container">
+        <span class="section-tag">Contato</span>
+        <h1>Fale com a nossa equipe</h1>
+        <p class="lead">Preencha o formulário e retornaremos para entender o contexto da sua equipe e apresentar a plataforma.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container contact-grid">
+        <aside class="contact-copy reveal">
+            <h2>Canais de atendimento</h2>
+            <ul class="contact-info">
+                <li><strong>E-mail:</strong> contato@@unsolved.example</li>
+                <li><strong>Telefone:</strong> +55 (11) 4000-0000</li>
+                <li><strong>Atendimento:</strong> dias úteis, das 9h às 18h</li>
+            </ul>
+            <div class="side-card">
+                <span class="stamp-mini">EM INVESTIGAÇÃO</span>
+                <h3>Prefere uma demonstração guiada?</h3>
+                <p>Podemos apresentar a plataforma ao vivo, no contexto da sua equipe.</p>
+                <a class="btn btn-ghost" href="#" data-open-demo>Solicitar demonstração</a>
+            </div>
+        </aside>
+
+        <div class="contact-form-wrap reveal">
+            <partial name="_ContactForm" />
+        </div>
+    </div>
+</section>

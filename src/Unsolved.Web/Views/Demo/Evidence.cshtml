@@ -1,0 +1,46 @@
+@model IReadOnlyList<Evidence>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Evidências";
+}
+
+<div class="admin-page-head">
+    <h1>Evidências</h1>
+    <button class="btn btn-primary btn-sm" type="button" disabled title="Disponível na versão completa">+ Cadastrar evidência</button>
+</div>
+
+@* Formulário de cadastro (protótipo visual — não persiste dados) *@
+<section class="panel">
+    <header class="panel-head"><h2>Cadastro de evidência</h2><span class="stamp-mini">PROTÓTIPO</span></header>
+    <form class="admin-form" onsubmit="return false;" aria-label="Cadastro de evidência (demonstração)">
+        <div class="form-row">
+            <div class="field"><label>Código</label><input type="text" placeholder="EV-000-00" /></div>
+            <div class="field"><label>Tipo</label>
+                <select><option>Documento</option><option>Foto</option><option>Físico</option><option>Digital</option></select>
+            </div>
+            <div class="field"><label>Caso</label><input type="text" placeholder="UNS-2026-000" /></div>
+        </div>
+        <div class="field"><label>Descrição</label><input type="text" placeholder="Descrição da evidência" /></div>
+        <button class="btn btn-primary btn-sm" type="button" disabled>Salvar (demonstração)</button>
+    </form>
+</section>
+
+<section class="panel">
+    <header class="panel-head"><h2>Evidências cadastradas (@Model.Count)</h2></header>
+    <table class="data-table">
+        <thead><tr><th>Código</th><th>Descrição</th><th>Tipo</th><th>Status</th><th>Coletada em</th><th>Responsável</th></tr></thead>
+        <tbody>
+            @foreach (var e in Model)
+            {
+                <tr>
+                    <td class="mono">@e.Code</td>
+                    <td>@e.Description</td>
+                    <td>@e.Type</td>
+                    <td>@e.Status</td>
+                    <td>@e.CollectedOn.ToString("dd/MM/yyyy")</td>
+                    <td>@e.CollectedBy</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</section>

@@ -1,0 +1,397 @@
+@{
+    ViewData["Title"] = null; // usa o título padrão do site
+    ViewData["Description"] = "Unsolved: plataforma para gerenciar investigações, organizar evidências, acompanhar casos e colaborar entre equipes de segurança pública e privada.";
+}
+
+@* ==================== 1. HERO ==================== *@
+<section class="hero" id="inicio">
+    @* Fundo: mural investigativo sutil (documentos, fotos, linhas) desenhado via CSS/SVG *@
+    <div class="hero-board" aria-hidden="true">
+        <span class="pin pin-1"></span><span class="pin pin-2"></span><span class="pin pin-3"></span>
+        <span class="thread thread-1"></span><span class="thread thread-2"></span>
+        <span class="doc doc-1">CASO Nº UNS-2026-014</span>
+        <span class="doc doc-2">EVIDÊNCIA · EV-021-02</span>
+        <span class="photo photo-1"></span>
+        <span class="photo photo-2"></span>
+    </div>
+
+    <div class="container hero-inner">
+        <div class="hero-copy reveal">
+            <span class="eyebrow"><span class="dot"></span>Plataforma de gestão de investigações</span>
+            <h1 class="hero-title">Transforme pistas<br />em <span class="hl">respostas</span>.</h1>
+            <p class="hero-text">
+                Centralize casos, organize evidências e conecte informações em uma
+                plataforma desenvolvida para equipes de investigação.
+            </p>
+            <div class="hero-actions">
+                <a class="btn btn-primary btn-lg" href="#" data-open-demo>Solicitar demonstração</a>
+                <a class="btn btn-ghost btn-lg" href="#solucao">Conhecer a plataforma</a>
+            </div>
+            <ul class="hero-trust">
+                <li>Controle de acesso por função</li>
+                <li>Registro de atividades</li>
+                <li>Arquitetura preparada para LGPD</li>
+            </ul>
+        </div>
+
+        <div class="hero-visual reveal">
+            <div class="hero-logo-frame">
+                <img src="~/images/logo.png" alt="Mascote investigador da Unsolved" class="hero-logo" width="360" height="360" />
+                <span class="scan-line" aria-hidden="true"></span>
+            </div>
+            <span class="stamp stamp-hero" aria-hidden="true">CONFIDENCIAL</span>
+        </div>
+    </div>
+</section>
+
+@* ==================== 3. PROBLEMAS ==================== *@
+<section class="section" id="problemas">
+    <div class="container">
+        <header class="section-head reveal">
+            <span class="section-tag">O cenário atual</span>
+            <h2>Investigar sem uma base organizada custa tempo e evidências</h2>
+            <p>Equipes lidam com informação dispersa e processos manuais. A Unsolved existe para reunir tudo em um só lugar.</p>
+        </header>
+
+        <div class="cards-grid">
+            @{
+                var problems = new (string Icon, string Title, string Text)[]
+                {
+                    ("scatter", "Informações espalhadas", "Dados em diferentes sistemas, planilhas e papéis, difíceis de cruzar."),
+                    ("box", "Evidências desorganizadas", "Falta de padrão para registrar e localizar evidências rapidamente."),
+                    ("team", "Pouca colaboração", "Equipes trabalham isoladas, sem visão compartilhada do caso."),
+                    ("clock", "Processos manuais e lentos", "Retrabalho e etapas repetitivas que consomem horas de investigação."),
+                    ("alert", "Risco de perda de informação", "Sem histórico e backup, dados importantes se perdem."),
+                    ("chart", "Difícil acompanhar o andamento", "Sem visão clara do progresso e das próximas ações de cada caso."),
+                };
+            }
+            @foreach (var p in problems)
+            {
+                <article class="card problem-card reveal" data-lens>
+                    <span class="card-icon">@Html.Raw(Icons.Svg(p.Icon))</span>
+                    <h3>@p.Title</h3>
+                    <p>@p.Text</p>
+                </article>
+            }
+        </div>
+    </div>
+</section>
+
+@* ==================== 4. SOLUÇÃO ==================== *@
+<section class="section section-alt" id="solucao">
+    <div class="container solution-grid">
+        <div class="solution-copy reveal">
+            <span class="section-tag">A solução</span>
+            <h2>Uma central de investigação para toda a equipe</h2>
+            <p>A Unsolved reúne casos, pessoas, evidências e acontecimentos em um ambiente único, conectando as informações e apoiando as decisões da investigação.</p>
+            @* Manifesto — frases adaptadas do briefing, no tom do projeto. O trocadilho
+               com "bodes" conversa com a mascote (o bode detetive). *@
+            <blockquote class="manifesto">
+                Conectamos dados para apoiar decisões mais justas —
+                <strong>sem bodes expiatórios</strong>, apenas conclusões baseadas em evidências.
+            </blockquote>
+            <ul class="check-list">
+                <li>Centralização de investigações</li>
+                <li>Cadastro e acompanhamento de casos</li>
+                <li>Organização de suspeitos, vítimas e testemunhas</li>
+                <li>Armazenamento de evidências</li>
+                <li>Linha do tempo dos acontecimentos</li>
+                <li>Relacionamento entre pessoas, locais e evidências</li>
+                <li>Controle de acesso por usuário</li>
+                <li>Colaboração entre departamentos</li>
+                <li>Relatórios investigativos e painel de indicadores</li>
+                <li>Histórico de alterações e registro de atividades</li>
+            </ul>
+            <a class="btn btn-primary" href="/recursos">Ver todos os recursos</a>
+        </div>
+
+        @* Mockup de dashboard em um "monitor" *@
+        <div class="solution-visual reveal">
+            <div class="device-monitor">
+                <div class="device-bar"><span></span><span></span><span></span></div>
+                <div class="device-screen">
+                    <div class="mini-dash">
+                        <div class="mini-kpi"><strong>128</strong><span>Casos</span></div>
+                        <div class="mini-kpi"><strong>62%</strong><span>Progresso médio</span></div>
+                        <div class="mini-kpi"><strong>1.5k</strong><span>Evidências</span></div>
+                        <div class="mini-chart" aria-hidden="true">
+                            <span style="height:40%"></span><span style="height:70%"></span>
+                            <span style="height:55%"></span><span style="height:85%"></span>
+                            <span style="height:60%"></span><span style="height:95%"></span>
+                        </div>
+                        <div class="mini-row"><span class="stamp-mini">EM ANDAMENTO</span> UNS-2026-014</div>
+                        <div class="mini-row"><span class="stamp-mini stamp-review">EM REABERTURA</span> UNS-2026-021</div>
+                        <div class="mini-row"><span class="stamp-mini stamp-solved">RESOLVIDO</span> UNS-2025-198</div>
+                    </div>
+                </div>
+            </div>
+            <a class="device-cta" href="/account/login">Abrir demonstração do sistema →</a>
+        </div>
+    </div>
+</section>
+
+@* ==================== Destaque: Eliminando o bode expiatório ====================
+   Frases adaptadas do briefing, no tom do projeto (apoio à decisão, sem promessas
+   exageradas). Mantém o trocadilho do "bode", conversando com a mascote. *@
+<section class="section bode-section" id="bode-expiatorio">
+    <div class="container narrow bode-inner">
+        <span class="section-tag">Diferencial</span>
+        <h2>Eliminando o bode expiatório</h2>
+        <p>
+            A Unsolved cruza evidências balísticas, temporais e genéticas em um
+            banco de dados relacional. Ao conectar horários, locais e pessoas, a
+            plataforma ajuda a expor inconsistências — e a evitar que a investigação
+            recaia sobre a pessoa errada.
+        </p>
+        <blockquote class="manifesto manifesto-center">
+            “A plataforma não serve só para apontar um culpado — ela ajuda a
+            <strong>proteger o inocente</strong> contra vieses investigativos e falhas de procedimento.”
+            <footer>— Dra. Helena Vasconcelos, Perita Forense <em>(personagem ilustrativo)</em></footer>
+        </blockquote>
+    </div>
+</section>
+
+@* ==================== 5. COMO FUNCIONA ==================== *@
+<section class="section" id="como-funciona">
+    <div class="container">
+        <header class="section-head reveal">
+            <span class="section-tag">Como funciona</span>
+            <h2>Da abertura do caso ao acompanhamento — em quatro etapas</h2>
+        </header>
+
+        <ol class="steps-timeline">
+            <li class="step reveal">
+                <span class="step-num">01</span>
+                <h3>Cadastre o caso</h3>
+                <p>Registre o caso com número, título, prioridade e responsável.</p>
+            </li>
+            <li class="step reveal">
+                <span class="step-num">02</span>
+                <h3>Registre pessoas e evidências</h3>
+                <p>Adicione suspeitos, vítimas, testemunhas e catalogue as evidências.</p>
+            </li>
+            <li class="step reveal">
+                <span class="step-num">03</span>
+                <h3>Conecte pistas e acontecimentos</h3>
+                <p>Relacione pessoas, locais e evidências na linha do tempo.</p>
+            </li>
+            <li class="step reveal">
+                <span class="step-num">04</span>
+                <h3>Acompanhe o avanço</h3>
+                <p>Monitore o progresso, gere relatórios e apoie as decisões.</p>
+            </li>
+        </ol>
+    </div>
+</section>
+
+@* ==================== 6. FUNCIONALIDADES ==================== *@
+<section class="section section-alt" id="recursos">
+    <div class="container">
+        <header class="section-head reveal">
+            <span class="section-tag">Funcionalidades</span>
+            <h2>Tudo o que a investigação precisa, em um só lugar</h2>
+        </header>
+
+        <div class="cards-grid features-grid">
+            @{
+                var features = new (string Icon, string Title, string Text)[]
+                {
+                    ("folder", "Gestão de casos", "Abra, acompanhe e encerre casos com número, status e prioridade."),
+                    ("box", "Controle de evidências", "Catalogue evidências com código, tipo, custódia e responsável."),
+                    ("pin", "Mural investigativo", "Conecte pistas visualmente, como um quadro de investigação."),
+                    ("timeline", "Linha do tempo", "Ordene os acontecimentos e visualize a evolução do caso."),
+                    ("team", "Gestão de equipes", "Organize investigadores e distribua responsabilidades."),
+                    ("report", "Relatórios", "Gere relatórios investigativos e exporte informações."),
+                    ("bell", "Alertas e notificações", "Acompanhe prazos e mudanças importantes nos casos."),
+                    ("lock", "Permissões de acesso", "Defina o que cada função pode ver e fazer."),
+                    ("audit", "Auditoria de atividades", "Mantenha registro de quem fez o quê e quando."),
+                    ("search", "Busca avançada", "Encontre casos, pessoas e evidências rapidamente."),
+                };
+            }
+            @foreach (var f in features)
+            {
+                <article class="card feature-card reveal" data-lens>
+                    <span class="card-icon">@Html.Raw(Icons.Svg(f.Icon))</span>
+                    <h3>@f.Title</h3>
+                    <p>@f.Text</p>
+                </article>
+            }
+        </div>
+    </div>
+</section>
+
+@* ==================== 7. SEGURANÇA (resumo) ==================== *@
+<section class="section security-teaser" id="seguranca-resumo">
+    <div class="container security-grid">
+        <div class="reveal">
+            <span class="section-tag">Segurança e confiança</span>
+            <h2>Construída com responsabilidade sobre informações sensíveis</h2>
+            <p>A plataforma é pensada para proteger dados de investigação, com arquitetura preparada para os controles que órgãos e equipes exigem.</p>
+            <a class="btn btn-primary" href="/seguranca">Ver detalhes de segurança</a>
+        </div>
+        <ul class="security-pills reveal">
+            <li>Controle de acesso por função</li>
+            <li>Registro de atividades</li>
+            <li>Histórico de alterações</li>
+            <li>Gestão de permissões</li>
+            <li>Arquitetura preparada para criptografia</li>
+            <li>Preparação para conformidade com a LGPD</li>
+        </ul>
+    </div>
+</section>
+
+@* ==================== 8. PÚBLICO-ALVO ==================== *@
+<section class="section section-alt" id="para-quem">
+    <div class="container">
+        <header class="section-head reveal">
+            <span class="section-tag">Para quem é</span>
+            <h2>Desenvolvida para quem conduz investigações</h2>
+        </header>
+        <div class="audience-grid">
+            @{
+                var audience = new[]
+                {
+                    "Departamentos de polícia", "Delegacias", "Equipes de investigação",
+                    "Investigadores particulares", "Departamentos forenses", "Órgãos públicos",
+                    "Equipes de segurança corporativa"
+                };
+            }
+            @foreach (var a in audience)
+            {
+                <div class="audience-item reveal"><span class="audience-mark">✓</span>@a</div>
+            }
+        </div>
+    </div>
+</section>
+
+@* ==================== 10. DEMONSTRAÇÃO DO PRODUTO (interativa) ==================== *@
+<section class="section" id="demonstracao">
+    <div class="container">
+        <header class="section-head reveal">
+            <span class="section-tag">Demonstração</span>
+            <h2>Explore um caso de exemplo</h2>
+            <p>Filtre por status e selecione um caso para ver os detalhes. Simulação com dados fictícios.</p>
+        </header>
+
+        <div class="demo-explorer reveal" id="demo-explorer">
+            <div class="demo-filters" role="group" aria-label="Filtrar casos por status">
+                <button class="filter-chip is-active" data-filter="all">Todos</button>
+                <button class="filter-chip" data-filter="Em andamento">Em andamento</button>
+                <button class="filter-chip" data-filter="Em reabertura">Em reabertura</button>
+                <button class="filter-chip" data-filter="Resolvido">Resolvido</button>
+            </div>
+
+            <div class="demo-body">
+                <ul class="demo-caselist" id="demo-caselist">
+                    @* Cada caso carrega seus dados em data-* para o JavaScript exibir o detalhe *@
+                    <li>
+                        <button class="demo-caseitem is-selected" data-status="Em andamento"
+                                data-number="UNS-2026-014" data-name="Desaparecimento no Porto Velho"
+                                data-lead="Insp. A. Marques" data-progress="62" data-evidence="3"
+                                data-suspects="1" data-timeline="Abertura → Coleta de imagens → Depoimento → Análise digital">
+                            <span class="stamp-mini">EM ANDAMENTO</span>
+                            <strong>UNS-2026-014</strong>
+                            <span>Desaparecimento no Porto Velho</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="demo-caseitem" data-status="Em reabertura"
+                                data-number="UNS-2026-021" data-name="Fraude documental corporativa"
+                                data-lead="Insp. C. Nogueira" data-progress="78" data-evidence="2"
+                                data-suspects="1" data-timeline="Abertura → Coleta de logs → Perícia contábil">
+                            <span class="stamp-mini stamp-review">EM REABERTURA</span>
+                            <strong>UNS-2026-021</strong>
+                            <span>Fraude documental corporativa</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="demo-caseitem" data-status="Resolvido"
+                                data-number="UNS-2025-198" data-name="Furto em galeria de arte"
+                                data-lead="Insp. A. Marques" data-progress="100" data-evidence="1"
+                                data-suspects="1" data-timeline="Abertura → Identificação → Encerramento">
+                            <span class="stamp-mini stamp-solved">RESOLVIDO</span>
+                            <strong>UNS-2025-198</strong>
+                            <span>Furto em galeria de arte</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="demo-detail" id="demo-detail" aria-live="polite">
+                    <!-- preenchido por demo.js -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* ==================== 11. FAQ ==================== *@
+<section class="section section-alt" id="faq">
+    <div class="container narrow">
+        <header class="section-head reveal">
+            <span class="section-tag">Perguntas frequentes</span>
+            <h2>Dúvidas comuns</h2>
+        </header>
+
+        <div class="faq" id="faq-accordion">
+            @{
+                var faqs = new (string Q, string A)[]
+                {
+                    ("A plataforma pode ser personalizada?", "Sim. A estrutura é preparada para adaptações ao fluxo de trabalho de cada equipe."),
+                    ("É possível controlar o acesso de cada usuário?", "Sim. O controle de acesso por função permite definir o que cada usuário pode ver e fazer."),
+                    ("O sistema pode ser utilizado por diferentes departamentos?", "Sim. A colaboração entre departamentos é um dos objetivos da plataforma."),
+                    ("A plataforma funciona em dispositivos móveis?", "Sim. A interface é responsiva e se adapta a computadores, tablets e celulares."),
+                    ("É possível importar dados de outros sistemas?", "Há possibilidade de integração; recursos de importação estão planejados conforme a necessidade."),
+                    ("Como solicitar uma demonstração?", "Basta preencher o formulário de contato ou clicar em “Solicitar demonstração”."),
+                    ("Os dados ficam protegidos?", "A arquitetura é preparada para controles de segurança como permissões, registro de atividades e criptografia."),
+                    ("A plataforma pode funcionar em ambiente interno?", "A arquitetura é preparada para diferentes formas de implantação, incluindo ambientes internos."),
+                };
+            }
+            @for (int i = 0; i < faqs.Length; i++)
+            {
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false" aria-controls="faq-a-@i" id="faq-q-@i">
+                        <span>@faqs[i].Q</span>
+                        <span class="faq-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="faq-answer" id="faq-a-@i" role="region" aria-labelledby="faq-q-@i" hidden>
+                        <p>@faqs[i].A</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@* ==================== 13. CHAMADA FINAL ==================== *@
+<section class="cta-band">
+    <div class="container cta-inner reveal">
+        <span class="stamp-mini">CASO ABERTO</span>
+        <h2>É hora de trazer <span class="hl">justiça real</span>.</h2>
+        <p>Não deixe mais nenhum caso esfriar. Modernize sua equipe com uma plataforma criada para organizar informações, conectar evidências e apoiar decisões investigativas.</p>
+        <a class="btn btn-primary btn-lg" href="#" data-open-demo>Solicitar demonstração</a>
+    </div>
+</section>
+
+@* ==================== 14. CONTATO ==================== *@
+<section class="section" id="contato">
+    <div class="container contact-grid">
+        <div class="contact-copy reveal">
+            <span class="section-tag">Contato</span>
+            <h2>Fale com a nossa equipe</h2>
+            <p>Preencha o formulário e retornaremos para entender o contexto da sua equipe e apresentar a plataforma.</p>
+            <ul class="contact-info">
+                <li><strong>E-mail:</strong> contato@@unsolved.example</li>
+                <li><strong>Telefone:</strong> +55 (11) 4000-0000</li>
+                <li><strong>Atendimento:</strong> dias úteis, das 9h às 18h</li>
+            </ul>
+        </div>
+        <div class="contact-form-wrap reveal">
+            <partial name="_ContactForm" />
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @* Explorador interativo de casos — usado só nesta página. *@
+    <script src="~/js/demo.js" asp-append-version="true" defer></script>
+}

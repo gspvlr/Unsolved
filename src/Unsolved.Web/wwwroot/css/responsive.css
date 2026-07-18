@@ -1,0 +1,69 @@
+/* =============================================================
+   Unsolved — Responsividade
+   Breakpoints: <=1024 (tablet), <=760 (mobile), <=480 (pequeno)
+   ============================================================= */
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1024px) {
+    .hero-inner { grid-template-columns: 1fr; text-align: center; gap: 34px; }
+    .hero-copy { order: 2; }
+    .hero-visual { order: 1; }
+    .hero-text, .hero-actions, .hero-trust { margin-inline: auto; justify-content: center; }
+    .hero-actions { justify-content: center; }
+
+    .solution-grid, .security-grid, .about-grid, .contact-grid, .demo-request-grid { grid-template-columns: 1fr; gap: 34px; }
+    .cards-grid { grid-template-columns: repeat(2, 1fr); }
+    .features-grid > .card { flex-basis: calc(50% - 11px); }   /* 2 por linha no tablet */
+    .steps-timeline { grid-template-columns: repeat(2, 1fr); }
+    .steps-timeline::before { display: none; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 28px; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .auth-wrap { grid-template-columns: 1fr; }
+    .auth-aside { display: none; }
+    .demo-body { grid-template-columns: 1fr; }
+    .demo-caselist { border-right: 0; border-bottom: 1px solid var(--line); }
+}
+
+/* ---------- Menu hambúrguer ----------
+   Ativa em <=1180px: os 7 itens + logo + CTA só cabem com folga acima disso;
+   abaixo, o menu completo ficava espremido contra a logo. */
+@media (max-width: 1180px) {
+    .nav-toggle { display: flex; }
+
+    .main-nav {
+        position: fixed; inset: var(--header-h) 0 auto 0;
+        flex-direction: column; align-items: stretch; gap: 0;
+        background: rgba(20, 18, 10, .98); backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--line-strong);
+        padding: 12px 20px 24px; box-shadow: var(--shadow);
+        transform: translateY(-140%); transition: transform var(--transition); max-height: calc(100vh - var(--header-h)); overflow-y: auto;
+    }
+    .main-nav.open { transform: translateY(0); }
+    /* desfaz a centralização absoluta do desktop dentro do menu suspenso */
+    .main-nav ul { position: static; transform: none; pointer-events: auto; flex-direction: column; align-items: stretch; gap: 0; width: 100%; }
+    .main-nav ul li { border-bottom: 1px solid var(--line); }
+    .main-nav ul a { display: block; padding: 15px 4px; font-size: 1rem; }
+    .main-nav ul a::after { display: none; }
+    .nav-cta { margin-top: 16px; }
+}
+
+/* ---------- Mobile pequeno ---------- */
+@media (max-width: 600px) {
+    :root { --header-h: 64px; }
+    .cards-grid, .steps-timeline, .stats-grid, .footer-grid { grid-template-columns: 1fr; }
+    .features-grid > .card, .audience-item { flex-basis: 100%; }   /* 1 por linha no celular */
+    .form-row { grid-template-columns: 1fr; }
+    .brand-name { font-size: 1.25rem; }
+    .brand-logo { width: 40px; height: 40px; }
+    .section { padding: 52px 0; }
+    .contact-form-wrap, .modal-box { padding: 22px; }
+    .footer-bottom { flex-direction: column; text-align: center; }
+    .stamp-hero { right: 2%; font-size: .9rem; }
+    .cursor-lens { display: none; } /* sem cursor customizado em telas de toque */
+    .demo-detail-grid { grid-template-columns: 1fr; }
+}
+
+/* Telas de toque: desativa a lupa que segue o mouse */
+@media (hover: none) {
+    .cursor-lens { display: none; }
+}

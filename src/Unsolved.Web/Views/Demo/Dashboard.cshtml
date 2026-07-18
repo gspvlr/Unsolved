@@ -1,0 +1,58 @@
+@model IReadOnlyList<InvestigationCase>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Painel";
+    var m = ViewData["Metrics"] as DashboardMetrics;
+}
+
+<div class="admin-page-head">
+    <h1>Visão geral</h1>
+    <a class="btn btn-primary btn-sm" href="/sistema/casos">Ver casos</a>
+</div>
+
+@* ---- KPIs ---- *@
+<div class="kpi-grid">
+    <div class="kpi-card"><span class="kpi-label">Casos totais</span><span class="kpi-num" data-counter="@(m?.TotalCases ?? 0)">0</span></div>
+    <div class="kpi-card"><span class="kpi-label">Em aberto</span><span class="kpi-num" data-counter="@(m?.OpenCases ?? 0)">0</span></div>
+    <div class="kpi-card"><span class="kpi-label">Resolvidos</span><span class="kpi-num" data-counter="@(m?.SolvedCases ?? 0)">0</span></div>
+    <div class="kpi-card"><span class="kpi-label">Evidências</span><span class="kpi-num" data-counter="@(m?.EvidenceItems ?? 0)">0</span></div>
+    <div class="kpi-card"><span class="kpi-label">Pessoas</span><span class="kpi-num" data-counter="@(m?.PeopleTracked ?? 0)">0</span></div>
+    <div class="kpi-card"><span class="kpi-label">Equipe</span><span class="kpi-num" data-counter="@(m?.TeamMembers ?? 0)">0</span></div>
+</div>
+
+<div class="admin-cols">
+    <section class="panel">
+        <header class="panel-head"><h2>Casos recentes</h2></header>
+        <table class="data-table">
+            <thead>
+                <tr><th>Caso</th><th>Título</th><th>Status</th><th>Responsável</th><th>Progresso</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td class="mono"><a href="/sistema/casos/@c.Id">@c.CaseNumber</a></td>
+                        <td>@c.Title</td>
+                        <td><span class="status-badge @DemoUi.StatusClass(c.Status)">@c.Status</span></td>
+                        <td>@c.LeadInvestigator</td>
+                        <td>
+                            <div class="progress" title="@c.Progress%">
+                                <span style="width:@c.Progress%"></span>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+
+    <aside class="panel">
+        <header class="panel-head"><h2>Atividade</h2></header>
+        <ul class="activity">
+            <li><span class="mono">14:02</span> Evidência EV-014-01 marcada como "Em análise".</li>
+            <li><span class="mono">11:37</span> Novo depoimento adicionado ao caso UNS-2026-014.</li>
+            <li><span class="mono">09:15</span> Caso UNS-2026-021 atualizado por Insp. C. Nogueira.</li>
+            <li><span class="mono">Ontem</span> Relatório mensal gerado.</li>
+        </ul>
+    </aside>
+</div>

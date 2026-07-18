@@ -1,0 +1,57 @@
+digraph UnsolvedERD {
+  graph [
+    rankdir=LR,
+    bgcolor="#201D12",
+    pad="0.35",
+    nodesep="0.45",
+    ranksep="0.85",
+    splines=ortho
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="Arial",
+    fontsize=13,
+    color="#F0D86D",
+    fontcolor="#201D12",
+    fillcolor="#F8F5E7",
+    penwidth=1.6,
+    margin="0.16,0.11"
+  ];
+  edge [
+    color="#B5CDDA",
+    fontcolor="#F8F5E7",
+    fontname="Arial",
+    fontsize=10,
+    arrowsize=0.7,
+    penwidth=1.2
+  ];
+
+  cities [label="CITIES\nPK city_id"];
+  cases [label="CASES\nPK case_id\nUK case_code\nstatus + dates"];
+  people [label="PEOPLE\nPK person_id"];
+  victims [label="CASE_VICTIMS\nage + occupation\nrelationship"];
+  suspect_profiles [label="SUSPECT_PROFILES\ncriminal history"];
+  suspects [label="CASE_SUSPECTS\nalias + link"];
+  witnesses [label="CASE_WITNESSES\nstatement + reliability"];
+  investigators [label="INVESTIGATORS\nspecialty"];
+  assignments [label="CASE_INVESTIGATORS\nlead + dates"];
+  evidence [label="EVIDENCE\ncode + discovery\nlocation"];
+  analyses [label="FORENSIC_ANALYSES\nDNA / digital / others"];
+  history [label="CASE_STATUS_HISTORY\narchive + reopen"];
+
+  cities -> cases [label="1 : N"];
+  cases -> victims [label="1 : N"];
+  people -> victims [label="1 : N"];
+  people -> suspect_profiles [label="1 : 0..1"];
+  suspect_profiles -> suspects [label="1 : N"];
+  cases -> suspects [label="1 : N"];
+  people -> witnesses [label="1 : N"];
+  cases -> witnesses [label="1 : N"];
+  investigators -> assignments [label="1 : N"];
+  cases -> assignments [label="1 : N"];
+  cases -> evidence [label="1 : N"];
+  evidence -> analyses [label="1 : N"];
+  cases -> history [label="1 : N"];
+}
+

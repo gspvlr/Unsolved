@@ -1,0 +1,57 @@
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Usuários";
+
+    // Usuários fictícios (protótipo). No futuro, viriam de uma tabela do SQL Server.
+    var users = new (string Name, string Role, string Access, bool Active)[]
+    {
+        ("Insp. A. Marques", "Investigador líder", "Administrador", true),
+        ("Insp. C. Nogueira", "Investigador", "Editor", true),
+        ("Téc. R. Souza", "Perícia", "Editor", true),
+        ("Téc. L. Dias", "Perícia", "Leitor", true),
+        ("Ana Recepção", "Apoio administrativo", "Leitor", false),
+    };
+}
+
+<div class="admin-page-head">
+    <h1>Gestão de usuários</h1>
+    <button class="btn btn-primary btn-sm" type="button" disabled title="Disponível na versão completa">+ Convidar usuário</button>
+</div>
+
+<section class="panel">
+    <table class="data-table">
+        <thead><tr><th>Usuário</th><th>Função</th><th>Nível de acesso</th><th>Situação</th></tr></thead>
+        <tbody>
+            @foreach (var u in users)
+            {
+                <tr>
+                    <td>
+                        <span class="person-avatar person-avatar-sm" aria-hidden="true">@u.Name[0]</span>
+                        @u.Name
+                    </td>
+                    <td>@u.Role</td>
+                    <td><span class="tag">@u.Access</span></td>
+                    <td>
+                        @if (u.Active)
+                        {
+                            <span class="status-badge st-solved">Ativo</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge st-cold">Inativo</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+<section class="panel">
+    <header class="panel-head"><h2>Níveis de acesso</h2></header>
+    <div class="access-grid">
+        <div class="access-card"><h3>Administrador</h3><p>Acesso total: casos, usuários, configurações e auditoria.</p></div>
+        <div class="access-card"><h3>Editor</h3><p>Cria e edita casos, evidências e pessoas.</p></div>
+        <div class="access-card"><h3>Leitor</h3><p>Somente visualização dos casos permitidos.</p></div>
+    </div>
+</section>

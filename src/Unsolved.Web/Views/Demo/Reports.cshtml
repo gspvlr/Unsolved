@@ -1,0 +1,56 @@
+@model IReadOnlyList<InvestigationCase>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Relatórios";
+    var m = ViewData["Metrics"] as DashboardMetrics;
+
+    // Distribuição por status para um gráfico de barras simples.
+    var byStatus = CaseStatus.All
+        .Select(s => new { Status = s, Count = Model.Count(c => c.Status == s) })
+        .ToList();
+    var max = byStatus.Count > 0 ? Math.Max(1, byStatus.Max(x => x.Count)) : 1;
+}
+
+<div class="admin-page-head">
+    <h1>Relatórios</h1>
+    <button class="btn btn-primary btn-sm" type="button" disabled title="Disponível na versão completa">Exportar</button>
+</div>
+
+<div class="kpi-grid">
+    <div class="kpi-card"><span class="kpi-label">Casos</span><span class="kpi-num" data-counter="@(m?.TotalCases ?? 0)">0</span></div>
+    <div class="kpi-card"><span class="kpi-label">Resolvidos</span><span class="kpi-num" data-counter="@(m?.SolvedCases ?? 0)">0</span></div>
+    <div class="kpi-card"><span class="kpi-label">Evidências</span><span class="kpi-num" data-counter="@(m?.EvidenceItems ?? 0)">0</span></div>
+    <div class="kpi-card"><span class="kpi-label">Pessoas</span><span class="kpi-num" data-counter="@(m?.PeopleTracked ?? 0)">0</span></div>
+</div>
+
+<div class="admin-cols">
+    <section class="panel">
+        <header class="panel-head"><h2>Casos por status</h2></header>
+        <div class="bar-chart">
+            @foreach (var b in byStatus)
+            {
+                <div class="bar-row">
+                    <span class="bar-label">@b.Status</span>
+                    <div class="bar-track"><span class="bar-fill" style="width:@(b.Count * 100 / max)%"></span></div>
+                    <span class="bar-value">@b.Count</span>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="panel">
+        <header class="panel-head"><h2>Progresso por caso</h2></header>
+        <table class="data-table">
+            <thead><tr><th>Caso</th><th>Progresso</th></tr></thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td class="mono">@c.CaseNumber</td>
+                        <td><div class="progress"><span style="width:@c.Progress%"></span></div></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+</div>

@@ -1,0 +1,60 @@
+/* =============================================================
+   Unsolved — Animações
+   Revelação ao rolar, contadores, carimbo, scan.
+   TODAS respeitam prefers-reduced-motion (ver final do arquivo).
+   ============================================================= */
+
+/* Revelar elementos ao entrar na tela (classe .reveal; JS adiciona .is-visible) */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s cubic-bezier(.22, .61, .36, 1); will-change: opacity, transform; }
+.reveal.is-visible { opacity: 1; transform: none; }
+/* Pequeno atraso escalonado quando vários .reveal são irmãos */
+.reveal:nth-child(2) { transition-delay: .06s; }
+.reveal:nth-child(3) { transition-delay: .12s; }
+.reveal:nth-child(4) { transition-delay: .18s; }
+
+/* Linha de "scan" do hero */
+@keyframes scan { 0% { top: 12%; opacity: 0; } 20% { opacity: .6; } 80% { opacity: .6; } 100% { top: 82%; opacity: 0; } }
+.scan-line { animation: scan 4.5s ease-in-out infinite; }
+
+/* Carimbo confidencial (easter egg) */
+@keyframes stampIn {
+    0% { opacity: 0; transform: translate(-50%, -50%) rotate(-16deg) scale(2.4); }
+    18% { opacity: .95; transform: translate(-50%, -50%) rotate(-16deg) scale(1); }
+    72% { opacity: .95; transform: translate(-50%, -50%) rotate(-16deg) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) rotate(-16deg) scale(1.05); }
+}
+
+/* Pulso suave do ponto do "eyebrow" */
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 4px rgba(240, 216, 109, .18); } 50% { box-shadow: 0 0 0 7px rgba(240, 216, 109, .05); } }
+.eyebrow .dot { animation: pulse 2.4s ease-in-out infinite; }
+
+/* Barras do mini-gráfico "crescendo" */
+@keyframes growUp { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.mini-chart span { transform-origin: bottom; animation: growUp 1s ease forwards; }
+
+/* Pulso de destaque de uma pista encontrada / dica (easter egg) */
+@keyframes cluePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(240, 216, 109, 0); } 30% { box-shadow: 0 0 0 7px rgba(240, 216, 109, .35); } }
+.clue-pulse { animation: cluePulse 1s ease 2; }
+
+/* Flash do HUD ao encontrar um segredo (feedback claro) */
+@keyframes hudFlash { 0% { transform: scale(1); } 35% { transform: scale(1.2); box-shadow: 0 0 0 8px rgba(240, 216, 109, .35); } 100% { transform: scale(1); } }
+.quest-hud.flash { animation: hudFlash .6s ease; }
+
+/* Linha de pistas que "desenha" no scroll (easter egg) — usada por interactions.js */
+.thread-scroll { position: fixed; left: 0; top: 0; width: 3px; height: 0; background: linear-gradient(180deg, var(--danger), transparent); z-index: 80; pointer-events: none; opacity: .5; }
+
+/* =============================================================
+   Preferência por menos movimento: desativa animações/transições
+   ============================================================= */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+        scroll-behavior: auto !important;
+    }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .cursor-lens { display: none !important; }
+    .scan-line { display: none; }
+}

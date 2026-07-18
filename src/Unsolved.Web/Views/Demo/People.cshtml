@@ -1,0 +1,43 @@
+@model IReadOnlyList<Person>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Pessoas";
+}
+
+<div class="admin-page-head">
+    <h1>Pessoas</h1>
+    <button class="btn btn-primary btn-sm" type="button" disabled title="Disponível na versão completa">+ Cadastrar pessoa</button>
+</div>
+
+<section class="panel">
+    <header class="panel-head"><h2>Cadastro de pessoa</h2><span class="stamp-mini">PROTÓTIPO</span></header>
+    <form class="admin-form" onsubmit="return false;" aria-label="Cadastro de pessoa (demonstração)">
+        <div class="form-row">
+            <div class="field"><label>Nome</label><input type="text" placeholder="Nome completo" /></div>
+            <div class="field"><label>Tipo</label>
+                <select><option>Suspeito</option><option>Vítima</option><option>Testemunha</option></select>
+            </div>
+            <div class="field"><label>Idade</label><input type="number" min="0" placeholder="—" /></div>
+        </div>
+        <div class="field"><label>Observações</label><input type="text" placeholder="Observações" /></div>
+        <button class="btn btn-primary btn-sm" type="button" disabled>Salvar (demonstração)</button>
+    </form>
+</section>
+
+<section class="panel">
+    <header class="panel-head"><h2>Pessoas relacionadas (@Model.Count)</h2></header>
+    <div class="people-grid">
+        @foreach (var p in Model)
+        {
+            <article class="person-card">
+                <span class="person-avatar" aria-hidden="true">@(p.Name.Length > 0 ? p.Name[0] : '?')</span>
+                <div>
+                    <strong>@p.Name</strong>
+                    <span class="tag tag-@p.Type.ToLower()">@p.Type</span>
+                    @if (p.Age.HasValue) { <p class="muted">@p.Age anos</p> }
+                    @if (!string.IsNullOrEmpty(p.Notes)) { <p class="muted">@p.Notes</p> }
+                </div>
+            </article>
+        }
+    </div>
+</section>

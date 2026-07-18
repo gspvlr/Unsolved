@@ -1,0 +1,14 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Erro";
+}
+<section class="error-page container">
+    <span class="stamp-mini stamp-danger">ARQUIVO CORROMPIDO</span>
+    <h1>Algo saiu do previsto</h1>
+    <p>Ocorreu um erro ao processar sua solicitação. Nossa equipe registra automaticamente essas ocorrências.</p>
+    @if (Model.ShowRequestId)
+    {
+        <p class="mono error-code">ID da requisição: @Model.RequestId</p>
+    }
+    <a class="btn btn-primary" href="/">Voltar ao início</a>
+</section>

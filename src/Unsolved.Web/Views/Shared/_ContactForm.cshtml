@@ -1,0 +1,66 @@
+@*
+    Formulário de contato completo e reutilizável.
+    Validação no cliente (validation.js) + envio AJAX (forms.js) para /contato/enviar.
+    A validação de servidor está em ContactController.Submit.
+*@
+<form class="contact-form js-contact-form" novalidate
+      action="/contato/enviar" method="post" data-success-inline="true">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="Source" value="@(ViewData["Source"] as string ?? "contato")" />
+
+    <div class="form-row">
+        <div class="field">
+            <label for="c-name">Nome *</label>
+            <input id="c-name" name="Name" type="text" required autocomplete="name" />
+            <small class="field-error" data-error-for="Name"></small>
+        </div>
+        <div class="field">
+            <label for="c-org">Instituição ou empresa *</label>
+            <input id="c-org" name="Organization" type="text" required autocomplete="organization" />
+            <small class="field-error" data-error-for="Organization"></small>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="field">
+            <label for="c-role">Cargo</label>
+            <input id="c-role" name="Role" type="text" autocomplete="organization-title" />
+            <small class="field-error" data-error-for="Role"></small>
+        </div>
+        <div class="field">
+            <label for="c-email">E-mail profissional *</label>
+            <input id="c-email" name="Email" type="email" required autocomplete="email" />
+            <small class="field-error" data-error-for="Email"></small>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="field">
+            <label for="c-phone">Telefone</label>
+            <input id="c-phone" name="Phone" type="tel" autocomplete="tel" />
+            <small class="field-error" data-error-for="Phone"></small>
+        </div>
+        <div class="field">
+            <label for="c-users">Número aproximado de usuários</label>
+            <select id="c-users" name="UserRange">
+                <option value="">Selecione…</option>
+                <option>1 a 5</option>
+                <option>6 a 20</option>
+                <option>21 a 50</option>
+                <option>51 a 200</option>
+                <option>Mais de 200</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="field">
+        <label for="c-message">Mensagem</label>
+        <textarea id="c-message" name="Message" rows="4"
+                  placeholder="Conte um pouco sobre sua equipe e o que procura."></textarea>
+        <small class="field-error" data-error-for="Message"></small>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg">Enviar</button>
+
+    <p class="form-feedback" role="status" aria-live="polite" hidden></p>
+</form>

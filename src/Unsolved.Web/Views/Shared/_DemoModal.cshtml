@@ -1,0 +1,77 @@
+@*
+    Modal "Solicitar demonstração".
+    Fica escondido por padrão e é aberto por qualquer elemento [data-open-demo].
+    O envio é feito via AJAX (forms.js) para /contato/enviar.
+*@
+<div class="modal-overlay" id="demo-modal" role="dialog" aria-modal="true" aria-labelledby="demo-modal-title" hidden>
+    <div class="modal-box">
+        <button class="modal-close" data-close-demo aria-label="Fechar">&times;</button>
+
+        <div class="modal-head">
+            <span class="stamp-mini">EM INVESTIGAÇÃO</span>
+            <h2 id="demo-modal-title">Solicitar demonstração</h2>
+            <p>Preencha os dados e nossa equipe entrará em contato para agendar uma demonstração guiada.</p>
+        </div>
+
+        <form class="contact-form js-contact-form" novalidate
+              action="/contato/enviar" method="post" data-success-inline="true">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Source" value="demonstracao" />
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="m-name">Nome *</label>
+                    <input id="m-name" name="Name" type="text" required autocomplete="name" />
+                    <small class="field-error" data-error-for="Name"></small>
+                </div>
+                <div class="field">
+                    <label for="m-org">Instituição ou empresa *</label>
+                    <input id="m-org" name="Organization" type="text" required autocomplete="organization" />
+                    <small class="field-error" data-error-for="Organization"></small>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="m-role">Cargo</label>
+                    <input id="m-role" name="Role" type="text" autocomplete="organization-title" />
+                    <small class="field-error" data-error-for="Role"></small>
+                </div>
+                <div class="field">
+                    <label for="m-email">E-mail profissional *</label>
+                    <input id="m-email" name="Email" type="email" required autocomplete="email" />
+                    <small class="field-error" data-error-for="Email"></small>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="m-phone">Telefone</label>
+                    <input id="m-phone" name="Phone" type="tel" autocomplete="tel" />
+                    <small class="field-error" data-error-for="Phone"></small>
+                </div>
+                <div class="field">
+                    <label for="m-users">Número aproximado de usuários</label>
+                    <select id="m-users" name="UserRange">
+                        <option value="">Selecione…</option>
+                        <option>1 a 5</option>
+                        <option>6 a 20</option>
+                        <option>21 a 50</option>
+                        <option>51 a 200</option>
+                        <option>Mais de 200</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="m-message">Mensagem</label>
+                <textarea id="m-message" name="Message" rows="3"></textarea>
+                <small class="field-error" data-error-for="Message"></small>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Enviar solicitação</button>
+
+            <p class="form-feedback" role="status" aria-live="polite" hidden></p>
+        </form>
+    </div>
+</div>

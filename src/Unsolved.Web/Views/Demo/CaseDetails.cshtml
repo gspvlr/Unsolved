@@ -1,0 +1,79 @@
+@model InvestigationCase
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = Model.CaseNumber;
+}
+
+<div class="admin-page-head">
+    <div>
+        <a class="back-link" href="/sistema/casos">← Casos</a>
+        <h1>@Model.Title</h1>
+        <p class="mono muted">@Model.CaseNumber · @Model.City · Aberto em @Model.OpenedOn.ToString("dd/MM/yyyy")</p>
+    </div>
+    <span class="status-badge @DemoUi.StatusClass(Model.Status)">@Model.Status</span>
+</div>
+
+<div class="case-summary panel">
+    <div class="case-meta">
+        <div><span class="muted">Responsável</span><strong>@Model.LeadInvestigator</strong></div>
+        <div><span class="muted">Prioridade</span><strong>@Model.Priority</strong></div>
+        <div><span class="muted">Última atualização</span><strong>@Model.LastUpdate.ToString("dd/MM/yyyy")</strong></div>
+        <div><span class="muted">Progresso</span><strong>@Model.Progress%</strong></div>
+    </div>
+    <div class="progress progress-lg"><span style="width:@Model.Progress%"></span></div>
+    <p class="case-desc">@Model.Summary</p>
+</div>
+
+<div class="admin-cols">
+    <section class="panel">
+        <header class="panel-head"><h2>Evidências (@Model.Evidences.Count)</h2></header>
+        <table class="data-table">
+            <thead><tr><th>Código</th><th>Descrição</th><th>Tipo</th><th>Status</th></tr></thead>
+            <tbody>
+                @foreach (var e in Model.Evidences)
+                {
+                    <tr>
+                        <td class="mono">@e.Code</td>
+                        <td>@e.Description</td>
+                        <td>@e.Type</td>
+                        <td>@e.Status</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel">
+        <header class="panel-head"><h2>Pessoas (@Model.People.Count)</h2></header>
+        <ul class="people-list">
+            @foreach (var p in Model.People)
+            {
+                <li>
+                    <span class="person-avatar" aria-hidden="true">@(p.Name.Length > 0 ? p.Name[0] : '?')</span>
+                    <div>
+                        <strong>@p.Name</strong>
+                        <span class="tag tag-@p.Type.ToLower()">@p.Type</span>
+                        @if (!string.IsNullOrEmpty(p.Notes)) { <p class="muted">@p.Notes</p> }
+                    </div>
+                </li>
+            }
+        </ul>
+    </section>
+</div>
+
+<section class="panel">
+    <header class="panel-head"><h2>Linha do tempo</h2></header>
+    <ol class="case-timeline">
+        @foreach (var t in Model.Timeline.OrderBy(x => x.When))
+        {
+            <li>
+                <span class="tl-dot tl-@t.Category.ToLower()" aria-hidden="true"></span>
+                <div class="tl-content">
+                    <span class="mono muted">@t.When.ToString("dd/MM/yyyy")</span>
+                    <strong>@t.Title</strong>
+                    <p>@t.Description</p>
+                </div>
+            </li>
+        }
+    </ol>
+</section>

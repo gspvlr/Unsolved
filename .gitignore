@@ -1,0 +1,39 @@
+# Build do .NET
+**/bin/
+**/obj/
+artifacts/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Configuracoes locais e segredos
+.env
+appsettings.Local.json
+appsettings.*.local.json
+secrets.json
+
+# Banco local
+*.db
+*.sqlite
+*.sqlite3
+mysql-data/
+
+# Sistema operacional e temporarios
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+~$*
+
+# Scratch da geracao da apresentacao
+.presentation-work/
+
+# Ferramentas locais de IA/editor
+.claude/
+

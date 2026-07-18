@@ -1,0 +1,67 @@
+@{
+    ViewData["Title"] = "Recursos";
+    ViewData["Description"] = "Recursos da Unsolved: gestão de casos, controle de evidências, mural investigativo, linha do tempo, relatórios, permissões e auditoria.";
+
+    var groups = new (string Title, (string Icon, string Name, string Desc)[] Items)[]
+    {
+        ("Casos e investigação", new (string,string,string)[]
+        {
+            ("folder","Gestão de casos","Abra, acompanhe e encerre casos com número, status, prioridade e responsável."),
+            ("timeline","Linha do tempo","Organize os acontecimentos em ordem cronológica e visualize a evolução."),
+            ("pin","Mural investigativo","Conecte pistas, pessoas e evidências como em um quadro de investigação."),
+            ("search","Busca avançada","Localize casos, pessoas e evidências com filtros combinados."),
+        }),
+        ("Evidências e pessoas", new (string,string,string)[]
+        {
+            ("box","Controle de evidências","Catalogue evidências com código, tipo, custódia e responsável."),
+            ("team","Suspeitos, vítimas e testemunhas","Cadastre e relacione os envolvidos em cada caso."),
+            ("chart","Relacionamento de dados","Conecte pessoas, locais e evidências entre si."),
+        }),
+        ("Gestão e colaboração", new (string,string,string)[]
+        {
+            ("team","Gestão de equipes","Distribua responsabilidades e acompanhe o trabalho da equipe."),
+            ("report","Relatórios investigativos","Gere relatórios e exporte informações do caso."),
+            ("bell","Alertas e notificações","Acompanhe prazos e mudanças relevantes."),
+        }),
+        ("Segurança e controle", new (string,string,string)[]
+        {
+            ("lock","Permissões de acesso","Defina o que cada função pode ver e fazer."),
+            ("audit","Auditoria de atividades","Registro de quem fez o quê e quando."),
+            ("clock","Histórico de alterações","Acompanhe o que mudou em cada caso ao longo do tempo."),
+        }),
+    };
+}
+
+<section class="page-hero">
+    <div class="container">
+        <span class="section-tag">Recursos</span>
+        <h1>Recursos que sustentam a investigação</h1>
+        <p class="lead">Uma plataforma completa para registrar, conectar e acompanhar tudo o que importa em um caso.</p>
+    </div>
+</section>
+
+@foreach (var g in groups)
+{
+    <section class="section @(Array.IndexOf(groups, g) % 2 == 1 ? "section-alt" : "")">
+        <div class="container">
+            <header class="section-head reveal"><h2>@g.Title</h2></header>
+            <div class="cards-grid features-grid">
+                @foreach (var it in g.Items)
+                {
+                    <article class="card feature-card reveal" data-lens>
+                        <span class="card-icon">@Html.Raw(Unsolved.Views.Icons.Svg(it.Icon))</span>
+                        <h3>@it.Name</h3>
+                        <p>@it.Desc</p>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<section class="cta-band">
+    <div class="container cta-inner reveal">
+        <h2>Veja os recursos em uma demonstração</h2>
+        <a class="btn btn-primary btn-lg" href="#" data-open-demo>Solicitar demonstração</a>
+    </div>
+</section>

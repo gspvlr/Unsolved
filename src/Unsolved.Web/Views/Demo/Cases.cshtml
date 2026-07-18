@@ -1,0 +1,43 @@
+@model IReadOnlyList<InvestigationCase>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Casos";
+}
+
+<div class="admin-page-head">
+    <h1>Casos</h1>
+    <button class="btn btn-primary btn-sm" type="button" disabled title="Disponível na versão completa">+ Novo caso</button>
+</div>
+
+@* Filtros por status (client-side). data-filter é lido por admin.js. *@
+<div class="demo-filters admin-filters" role="group" aria-label="Filtrar por status">
+    <button class="filter-chip is-active" data-filter="all">Todos</button>
+    @foreach (var s in CaseStatus.All)
+    {
+        <button class="filter-chip" data-filter="@s">@s</button>
+    }
+</div>
+
+<section class="panel">
+    <table class="data-table js-filter-table">
+        <thead>
+            <tr><th>Caso</th><th>Título</th><th>Cidade</th><th>Status</th><th>Prioridade</th><th>Responsável</th><th>Aberto em</th><th>Progresso</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
+            {
+                <tr data-status="@c.Status">
+                    <td class="mono"><a href="/sistema/casos/@c.Id">@c.CaseNumber</a></td>
+                    <td>@c.Title</td>
+                    <td>@c.City</td>
+                    <td><span class="status-badge @DemoUi.StatusClass(c.Status)">@c.Status</span></td>
+                    <td>@c.Priority</td>
+                    <td>@c.LeadInvestigator</td>
+                    <td>@c.OpenedOn.ToString("dd/MM/yyyy")</td>
+                    <td><div class="progress" title="@c.Progress%"><span style="width:@c.Progress%"></span></div></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p class="empty-hint" hidden>Nenhum caso encontrado para este filtro.</p>
+</section>
