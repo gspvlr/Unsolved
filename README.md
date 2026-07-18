@@ -206,21 +206,6 @@ da demo e não são recomendados para uma ferramenta operacional.
 6. Criar migrations, testes unitários e testes de integração com MySQL.
 7. Adicionar auditoria, retenção, backup e tratamento de dados sensíveis.
 
-## Publicação no GitHub (`gspvlr`)
-
-Com o [GitHub CLI](https://cli.github.com/) instalado:
-
-```bash
-git init
-git add .
-git commit -m "feat: entrega academica Unsolved com MySQL"
-git branch -M main
-gh auth login
-gh repo create gspvlr/unsolved-cold-cases --public --source=. --remote=origin --push
-```
-
-Antes do `git add`, confirme que `.env`, senhas, nomes reais e documentos
-sensíveis não aparecem em `git status`.
 
 ## Uso responsável
 
