@@ -260,7 +260,8 @@ main { padding-top: var(--header-h); }
 .mini-kpi span { font-size: .72rem; color: var(--ink-soft); }
 .mini-chart { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: 8px; height: 90px; padding: 10px; background: rgba(0, 0, 0, .2); border-radius: 8px; }
 .mini-chart span { flex: 1; background: linear-gradient(180deg, var(--gold), var(--brown)); border-radius: 4px 4px 0 0; }
-.mini-row { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: .8rem; color: var(--ink-soft); padding: 6px 0; border-top: 1px solid var(--line); }
+.mini-row { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: .8rem; color: var(--ink-soft); padding: 6px 0; border-top: 1px solid var(--line); text-decoration: none; transition: color .15s ease; }
+.mini-row:hover { color: var(--gold); }
 .device-cta { display: inline-block; margin-top: 16px; font-weight: 600; }
 
 /* =============================================================
@@ -520,5 +521,28 @@ body.modo-investigacao main { filter: grayscale(.8) contrast(1.03) brightness(1.
 .secret-list strong { color: var(--gold-soft); }
 .secret-hint { font-size: .84rem; color: var(--ink-dim); font-style: italic; margin: 12px 0 0; }
 .secret-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+
+/* ---- Dicas alternadas PC x toque (gabarito e afins) ----
+   Por padrão mostra a versão de mouse/teclado; em telas de toque troca
+   pela versão por gestos. */
+.hint-touch { display: none; }
+.secret-note { background: var(--bg-3); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px 16px; margin: 14px 0 0; font-size: .9rem; color: var(--ink-soft); }
+.secret-note strong { color: var(--gold); }
+
+@media (hover: none), (pointer: coarse) {
+    .hint-pc { display: none; }
+    .hint-touch { display: inline; }
+    .secret-note.hint-touch { display: block; }
+
+    /* Em telas de toque, os segredos "invisíveis" ganham pista tátil:
+       ficam levemente visíveis para poderem ser tocados. */
+    .invisible-ink { color: rgba(240, 216, 109, .30); cursor: pointer; }
+    .invisible-ink.ink-shown { color: var(--gold); text-shadow: 0 0 8px rgba(240, 216, 109, .6); }
+    .hidden-fingerprint { opacity: .5; }
+
+    /* Evita zoom por toque duplo / seleção durante gestos da caça. */
+    .hero-logo, .quest-hud { touch-action: manipulation; }
+    .quest-hud { -webkit-user-select: none; user-select: none; }
+}
 
 /* Utilitário: reduzir movimento é tratado em animations.css */

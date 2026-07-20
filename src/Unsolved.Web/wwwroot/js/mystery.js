@@ -148,6 +148,8 @@
         ink.className = "invisible-ink";
         ink.textContent = "🔍 221B — tinta invisível: bom trabalho, detetive.";
         ink.addEventListener("mouseenter", function () { foundSecret("ink"); });
+        // Toque: revela e registra (celulares não têm hover).
+        ink.addEventListener("click", function () { ink.classList.add("ink-shown"); foundSecret("ink"); });
         anchor.appendChild(ink);
     })();
 
@@ -208,4 +210,71 @@
     }
     buildHud();
     updateHud();
+
+    /* ---------- 6) Alternativas por GESTO em telas de toque ----------
+       No celular não dá para digitar comandos nem usar hover. Os mesmos
+       segredos (pista / sherlock / konami) são obtidos por gestos. */
+    const isTouch = matchMedia("(hover: none), (pointer: coarse)").matches || ("ontouchstart" in window);
+    if (isTouch) {
+        document.body.classList.add("is-touch");
+
+        // pista — toque longo (600ms) na lupa do HUD.
+        bindLongPress(hud, function () {
+            if (clueEls.length) clueEls.forEach(pulse);
+            foundSecret("pista", clueEls.length ? "toque longo — pistas destacadas" : "toque longo na lupa");
+        });
+
+        // sherlock — toque duplo na mascote do herói.
+        const mascot = document.querySelector(".hero-logo");
+        if (mascot) bindDoubleTap(mascot, function () {
+            foundSecret("sherlock", "toque duplo na mascote — elementar!");
+        });
+
+        // konami — sequência de deslizes ↑ ↑ ↓ ↓ ← → ← →.
+        bindSwipeSequence(["up", "up", "down", "down", "left", "right", "left", "right"], function () {
+            const on = document.body.classList.toggle("modo-investigacao");
+            foundSecret("konami", "Modo Cold Case " + (on ? "ativado" : "desativado"));
+        });
+    }
+
+    /* ---------- Helpers de gesto ---------- */
+    function bindLongPress(el, cb, ms) {
+        if (!el) return;
+        ms = ms || 600;
+        let timer = null, fired = false;
+        function start() { fired = false; clearTimeout(timer); timer = setTimeout(function () { fired = true; cb(); }, ms); }
+        function cancel() { clearTimeout(timer); }
+        el.addEventListener("pointerdown", start);
+        el.addEventListener("pointerup", cancel);
+        el.addEventListener("pointerleave", cancel);
+        el.addEventListener("pointercancel", cancel);
+        // Suprime o clique (abrir painel) que segue o toque longo.
+        el.addEventListener("click", function (e) { if (fired) { e.stopImmediatePropagation(); e.preventDefault(); fired = false; } }, true);
+    }
+
+    function bindDoubleTap(el, cb, gap) {
+        if (!el) return;
+        gap = gap || 320;
+        let last = 0;
+        el.addEventListener("pointerup", function () {
+            const now = performance.now();
+            if (now - last < gap) { cb(); last = 0; } else { last = now; }
+        });
+    }
+
+    function bindSwipeSequence(seq, cb) {
+        let pos = 0, sx = 0, sy = 0, resetTimer = null;
+        const MIN = 24; // deslocamento mínimo em px
+        document.addEventListener("touchstart", function (e) {
+            const t = e.changedTouches[0]; sx = t.clientX; sy = t.clientY;
+        }, { passive: true });
+        document.addEventListener("touchend", function (e) {
+            const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+            if (Math.abs(dx) < MIN && Math.abs(dy) < MIN) return;
+            const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up");
+            pos = (dir === seq[pos]) ? pos + 1 : (dir === seq[0] ? 1 : 0);
+            clearTimeout(resetTimer); resetTimer = setTimeout(function () { pos = 0; }, 1500);
+            if (pos === seq.length) { pos = 0; cb(); }
+        }, { passive: true });
+    }
 })();
