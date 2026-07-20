@@ -26,6 +26,7 @@ em documentos e sistemas diferentes.
 - Diagrama entidade-relacionamento e decisões de modelagem.
 - Análise de aderência aos dois anexos e próximos passos.
 - Apresentação de 5–7 minutos com notas do apresentador.
+- Dockerfile para empacotar e publicar o site.
 
 Apresentação final: [`docs/presentation/Unsolved_Pitch_MySQL.pptx`](docs/presentation/Unsolved_Pitch_MySQL.pptx)  
 Roteiro: [`docs/presentation/ROTEIRO.md`](docs/presentation/ROTEIRO.md)
@@ -39,6 +40,7 @@ Roteiro: [`docs/presentation/ROTEIRO.md`](docs/presentation/ROTEIRO.md)
 | Dados da demo | Serviços em memória | Implementados |
 | Banco acadêmico | MySQL 8.0+ / InnoDB | Implementado em scripts |
 | Banco local opcional | Docker Compose + MySQL 8.4 | Configurado |
+| Contêiner do site | Dockerfile multi-estágio (.NET 10) | Configurado |
 | Persistência do site | EF Core + provedor MySQL | Próxima etapa |
 
 ## Execução do site
@@ -71,6 +73,37 @@ dotnet watch run --project src/Unsolved.Web/Unsolved.csproj
 
 Na tela de login, qualquer e-mail e senha válidos **apenas no formato** abrem a
 demonstração. Não existe autenticação real nesta versão.
+
+### Painel administrativo (demo)
+
+Após o login, o painel em `/sistema` reúne as telas demonstrativas:
+
+| Tela | Rota |
+|---|---|
+| Visão geral | `/sistema/painel` |
+| Casos | `/sistema/casos` |
+| Detalhe do caso | `/sistema/casos/{id}` |
+| Evidências | `/sistema/evidencias` |
+| Pessoas | `/sistema/pessoas` |
+| Linha do tempo | `/sistema/linha-do-tempo` |
+| Mural | `/sistema/mural` |
+| Kanban | `/sistema/kanban` |
+| Relatórios | `/sistema/relatorios` |
+| Configurações | `/sistema/configuracoes` |
+| Usuários | `/sistema/usuarios` |
+
+### Deploy com Docker
+
+O [`Dockerfile`](Dockerfile) na raiz empacota o site em uma imagem .NET 10
+(build multi-estágio, execução como usuário não-root). A aplicação escuta em
+`0.0.0.0:8080`; se a plataforma de deploy injetar a variável `PORT`, ela é
+respeitada automaticamente.
+
+```bash
+docker build -t unsolved-web .
+docker run -p 8080:8080 unsolved-web
+# abre http://localhost:8080
+```
 
 ## Execução do MySQL
 
@@ -172,6 +205,8 @@ Unsolved/
 │   ├── analysis/             # Requisitos, aderência e pendências
 │   ├── architecture/         # ERD e decisões de modelagem
 │   └── presentation/         # Pitch, roteiro e materiais visuais
+├── Dockerfile                # Imagem .NET 10 do site (deploy)
+├── .dockerignore             # Exclusões do contexto de build
 ├── compose.yaml              # MySQL 8.4 local
 ├── Unsolved.slnx             # Solução .NET
 └── .env.example              # Variáveis sem credenciais reais
@@ -185,8 +220,19 @@ Unsolved/
 - Preto amarronzado: `#201D12`
 
 A interface usa referências a murais de evidências, carimbos, lupa, impressões
-digitais e linhas que conectam pistas. Os easter eggs servem apenas à narrativa
-da demo e não são recomendados para uma ferramenta operacional.
+digitais e linhas que conectam pistas.
+
+### Caça aos segredos (easter eggs)
+
+Uma "caça aos segredos" opcional espalha **10 segredos em 3 missões**, com um HUD
+de progresso (🔍 x/10). No **desktop** os gatilhos usam teclado e mouse (digitar
+`pista`/`sherlock`, código Konami, hover na tinta invisível). No **celular**, onde
+não há teclado nem hover, os mesmos segredos são obtidos por **gestos** (toque
+longo, toque duplo e sequência de deslizes) — o layout do HUD e do painel também
+se adapta ao toque. O gabarito fica na página oculta
+[`/segredos`](src/Unsolved.Web/Views/Home/Segredos.cshtml), que exibe as
+instruções conforme o dispositivo. Os easter eggs servem apenas à narrativa da
+demo e não são recomendados para uma ferramenta operacional.
 
 ## Limitações conhecidas
 
