@@ -46,26 +46,61 @@
         });
     })();
 
-    /* ---------- Filtro de tabela por status ---------- */
-    (function tableFilter() {
-        const chips = document.querySelectorAll(".admin-filters .filter-chip");
-        const table = document.querySelector(".js-filter-table");
-        if (!chips.length || !table) return;
-        const rows = Array.from(table.querySelectorAll("tbody tr"));
-        const emptyHint = table.parentElement.querySelector(".empty-hint");
+    /* ---------- Busca (topbar) + filtro por status (compõem) ----------
+       A busca da topbar filtra as linhas de qualquer .data-table da página
+       atual por texto; os chips de status (só na tela de Casos) compõem com
+       ela. ponytail: busca client-side na página corrente; busca global
+       cross-tela exige endpoint no servidor — trocar quando existir backend. */
+    (function tableSearchAndFilter() {
+        const tables = Array.from(document.querySelectorAll(".data-table"));
+        const grids = Array.from(document.querySelectorAll(".people-grid"));
+        if (!tables.length && !grids.length) return;
+        const searchInput = document.querySelector(".admin-search input");
 
+        let term = "";
+        let status = "all";
+
+        function refresh() {
+            tables.forEach(function (table) {
+                let visible = 0;
+                table.querySelectorAll("tbody tr").forEach(function (row) {
+                    const rowStatus = row.getAttribute("data-status");
+                    const okText = term === "" || row.textContent.toLowerCase().includes(term);
+                    const okStatus = status === "all" || !rowStatus || rowStatus === status;
+                    const show = okText && okStatus;
+                    row.style.display = show ? "" : "none";
+                    if (show) visible++;
+                });
+                const hint = table.parentElement.querySelector(".empty-hint");
+                if (hint) hint.hidden = visible !== 0;
+            });
+            // Grades de cards (ex.: Pessoas) — só filtro por texto.
+            grids.forEach(function (grid) {
+                let visible = 0;
+                grid.querySelectorAll(":scope > article").forEach(function (card) {
+                    const show = term === "" || card.textContent.toLowerCase().includes(term);
+                    card.style.display = show ? "" : "none";
+                    if (show) visible++;
+                });
+                const hint = grid.parentElement.querySelector(".empty-hint");
+                if (hint) hint.hidden = visible !== 0;
+            });
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener("input", function () {
+                term = searchInput.value.trim().toLowerCase();
+                refresh();
+            });
+        }
+
+        const chips = document.querySelectorAll(".admin-filters .filter-chip");
         chips.forEach(function (chip) {
             chip.addEventListener("click", function () {
                 chips.forEach(function (c) { c.classList.remove("is-active"); });
                 chip.classList.add("is-active");
-                const filter = chip.getAttribute("data-filter");
-                let visible = 0;
-                rows.forEach(function (row) {
-                    const show = filter === "all" || row.getAttribute("data-status") === filter;
-                    row.style.display = show ? "" : "none";
-                    if (show) visible++;
-                });
-                if (emptyHint) emptyHint.hidden = visible !== 0;
+                status = chip.getAttribute("data-filter");
+                refresh();
             });
         });
     })();

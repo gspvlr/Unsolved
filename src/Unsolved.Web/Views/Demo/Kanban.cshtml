@@ -1,0 +1,45 @@
+@model IReadOnlyList<InvestigationCase>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Kanban";
+    // Colunas na ordem do fluxo investigativo (esq. → dir.).
+    var columns = new[] { CaseStatus.Archived, CaseStatus.Reopening, CaseStatus.InProgress, CaseStatus.Solved };
+}
+
+<div class="admin-page-head">
+    <h1>Kanban <span class="count-badge">@Model.Count</span></h1>
+    <p class="muted">Casos por etapa. Clique num card para abrir o caso.</p>
+</div>
+
+<div class="kanban">
+    @foreach (var status in columns)
+    {
+        var cases = Model.Where(c => c.Status == status).OrderByDescending(c => c.CrimeOccurredOn).ToList();
+        <section class="kanban-col">
+            <header class="kanban-col-head @DemoUi.StatusClass(status)">
+                <span>@status</span>
+                <span class="kanban-count">@cases.Count</span>
+            </header>
+            <div class="kanban-cards">
+                @foreach (var c in cases)
+                {
+                    <a class="kanban-card" href="/sistema/casos/@c.Id">
+                        <span class="kanban-prio prio @DemoUi.PriorityClass(c.Priority)" title="Prioridade: @c.Priority"></span>
+                        <span class="kanban-code mono">@c.CaseCode</span>
+                        <strong class="kanban-title">@c.Title</strong>
+                        <span class="kanban-meta">@c.City.Display · @c.CrimeOccurredOn.ToString("dd/MM/yyyy")</span>
+                        <span class="kanban-tags">
+                            <span class="tag">@c.Evidences.Count evid.</span>
+                            <span class="tag">@c.Suspects.Count susp.</span>
+                            @if (c.Lead is not null) { <span class="tag">@c.Lead.FullName</span> }
+                        </span>
+                    </a>
+                }
+                @if (cases.Count == 0)
+                {
+                    <p class="kanban-empty">Nenhum caso.</p>
+                }
+            </div>
+        </section>
+    }
+</div>

@@ -8,7 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 var assignedPort = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrWhiteSpace(assignedPort))
 {
-    builder.WebHost.UseUrls($"http://localhost:{assignedPort}");
+    // 0.0.0.0 (não localhost) para ser acessível de fora do contêiner.
+    builder.WebHost.UseUrls($"http://0.0.0.0:{assignedPort}");
 }
 
 // ---------------------------------------------------------------------------

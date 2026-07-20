@@ -47,6 +47,9 @@ public class DemoController : Controller
     [HttpGet("mural")]
     public IActionResult Board() => View(_data.GetCases());
 
+    [HttpGet("kanban")]
+    public IActionResult Kanban() => View(_data.GetCases());
+
     [HttpGet("relatorios")]
     public IActionResult Reports()
     {
