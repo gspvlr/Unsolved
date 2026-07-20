@@ -39,7 +39,7 @@ public class DemoController : Controller
     public IActionResult Evidence() => View(_data.GetAllEvidence());
 
     [HttpGet("pessoas")]
-    public IActionResult People() => View(_data.GetAllPeople());
+    public IActionResult People() => View(_data.GetPeopleWithRoles());
 
     [HttpGet("linha-do-tempo")]
     public IActionResult Timeline() => View(_data.GetCases());
@@ -58,5 +58,10 @@ public class DemoController : Controller
     public IActionResult Settings() => View();
 
     [HttpGet("usuarios")]
-    public IActionResult Users() => View();
+    public IActionResult Users()
+    {
+        // Investigadores (tabela investigators) + casos para computar atribuições/resolvidos.
+        ViewData["Cases"] = _data.GetCases();
+        return View(_data.GetInvestigators());
+    }
 }

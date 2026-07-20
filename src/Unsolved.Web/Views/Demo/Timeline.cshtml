@@ -3,16 +3,16 @@
     Layout = "_AdminLayout";
     ViewData["Title"] = "Linha do tempo";
 
-    // Junta os eventos de todos os casos em uma linha do tempo única (mais recentes primeiro).
+    // Consolida o histórico de status (case_status_history) de todos os casos.
     var events = Model
-        .SelectMany(c => c.Timeline.Select(t => new { Case = c, Event = t }))
-        .OrderByDescending(x => x.Event.When)
+        .SelectMany(c => c.History.Select(h => new { Case = c, Change = h }))
+        .OrderByDescending(x => x.Change.ChangedAt)
         .ToList();
 }
 
 <div class="admin-page-head">
     <h1>Linha do tempo</h1>
-    <p class="muted">Acontecimentos consolidados de todos os casos.</p>
+    <p class="muted">Histórico de status consolidado de todos os casos (mais recentes primeiro).</p>
 </div>
 
 <section class="panel">
@@ -20,13 +20,13 @@
         @foreach (var x in events)
         {
             <li>
-                <span class="tl-dot tl-@x.Event.Category.ToLower()" aria-hidden="true"></span>
+                <span class="tl-dot" aria-hidden="true"></span>
                 <div class="tl-content">
-                    <span class="mono muted">@x.Event.When.ToString("dd/MM/yyyy")</span>
-                    <a class="mono tl-case" href="/sistema/casos/@x.Case.Id">@x.Case.CaseNumber</a>
-                    <strong>@x.Event.Title</strong>
-                    <p>@x.Event.Description</p>
-                    <span class="tag">@x.Event.Category</span>
+                    <span class="mono muted">@x.Change.ChangedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                    <a class="mono tl-case" href="/sistema/casos/@x.Case.Id">@x.Case.CaseCode</a>
+                    <strong>@(x.Change.PreviousStatus is null ? "Abertura" : x.Change.PreviousStatus + " → ") @x.Change.NewStatus</strong>
+                    <p>@x.Change.Reason</p>
+                    @if (x.Change.By is not null) { <span class="tag">@x.Change.By.FullName</span> }
                 </div>
             </li>
         }

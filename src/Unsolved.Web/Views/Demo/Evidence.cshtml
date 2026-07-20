@@ -2,43 +2,44 @@
 @{
     Layout = "_AdminLayout";
     ViewData["Title"] = "Evidências";
+    var withDna = Model.Count(e => e.HasDna);
 }
 
 <div class="admin-page-head">
-    <h1>Evidências</h1>
+    <h1>Evidências <span class="count-badge">@Model.Count</span></h1>
     <button class="btn btn-primary btn-sm" type="button" disabled title="Disponível na versão completa">+ Cadastrar evidência</button>
 </div>
 
-@* Formulário de cadastro (protótipo visual — não persiste dados) *@
-<section class="panel">
-    <header class="panel-head"><h2>Cadastro de evidência</h2><span class="stamp-mini">PROTÓTIPO</span></header>
-    <form class="admin-form" onsubmit="return false;" aria-label="Cadastro de evidência (demonstração)">
-        <div class="form-row">
-            <div class="field"><label>Código</label><input type="text" placeholder="EV-000-00" /></div>
-            <div class="field"><label>Tipo</label>
-                <select><option>Documento</option><option>Foto</option><option>Físico</option><option>Digital</option></select>
-            </div>
-            <div class="field"><label>Caso</label><input type="text" placeholder="UNS-2026-000" /></div>
-        </div>
-        <div class="field"><label>Descrição</label><input type="text" placeholder="Descrição da evidência" /></div>
-        <button class="btn btn-primary btn-sm" type="button" disabled>Salvar (demonstração)</button>
-    </form>
-</section>
+<div class="kpi-grid">
+    <div class="kpi-card"><span class="kpi-label">Total</span><span class="kpi-num" data-counter="@Model.Count">0</span></div>
+    <div class="kpi-card"><span class="kpi-label">Em análise</span><span class="kpi-num" data-counter="@Model.Count(e => e.CustodyStatus == "Em análise")">0</span></div>
+    <div class="kpi-card"><span class="kpi-label">Com análise de DNA</span><span class="kpi-num" data-counter="@withDna">0</span></div>
+    <div class="kpi-card"><span class="kpi-label">Biológicas</span><span class="kpi-num" data-counter="@Model.Count(e => e.Type == "Biológica")">0</span></div>
+</div>
 
 <section class="panel">
-    <header class="panel-head"><h2>Evidências cadastradas (@Model.Count)</h2></header>
+    <header class="panel-head"><h2>Evidências cadastradas</h2></header>
     <table class="data-table">
-        <thead><tr><th>Código</th><th>Descrição</th><th>Tipo</th><th>Status</th><th>Coletada em</th><th>Responsável</th></tr></thead>
+        <thead><tr><th>Foto</th><th>Código</th><th>Caso</th><th>Descrição</th><th>Tipo</th><th>Custódia</th><th>Descoberta</th><th>Coletada por</th><th>Perícia</th></tr></thead>
         <tbody>
             @foreach (var e in Model)
             {
                 <tr>
+                    <td><img src="@e.ImagePath" class="ev-thumb-sm js-lightbox" data-full="@e.ImagePath" data-caption="@e.Code — @e.Description" alt="Foto @e.Code" loading="lazy" /></td>
                     <td class="mono">@e.Code</td>
+                    <td class="mono"><a href="/sistema/casos/@e.CaseId">@e.CaseCode</a></td>
                     <td>@e.Description</td>
                     <td>@e.Type</td>
-                    <td>@e.Status</td>
-                    <td>@e.CollectedOn.ToString("dd/MM/yyyy")</td>
-                    <td>@e.CollectedBy</td>
+                    <td>@e.CustodyStatus</td>
+                    <td>@e.DiscoveredOn.ToString("dd/MM/yyyy")</td>
+                    <td>@(e.CollectedBy?.FullName ?? "—")</td>
+                    <td>
+                        @foreach (var a in e.Analyses)
+                        {
+                            <span class="tag tag-analysis">@a.Type</span>
+                        }
+                        @if (e.Analyses.Count == 0) { <span class="muted">—</span> }
+                    </td>
                 </tr>
             }
         </tbody>

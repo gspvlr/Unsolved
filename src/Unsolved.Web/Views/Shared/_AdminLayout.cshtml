@@ -68,6 +68,15 @@
         Ambiente de <strong>demonstração</strong> com dados fictícios. Estrutura preparada para funcionalidades reais.
     </div>
 
+    @* Lightbox para ampliar fotos de evidência (usado em toda a área do sistema). *@
+    <div class="lightbox" id="lightbox" hidden>
+        <button class="lightbox-close" aria-label="Fechar">&times;</button>
+        <figure>
+            <img id="lightbox-img" src="" alt="" />
+            <figcaption id="lightbox-cap"></figcaption>
+        </figure>
+    </div>
+
     <script src="~/js/admin.js" asp-append-version="true" defer></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -2,6 +2,15 @@ using Unsolved.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Se a variável de ambiente PORT estiver definida (ex.: ferramenta de preview,
+// Docker ou PaaS), a aplicação escuta nessa porta. Caso contrário, usa o padrão
+// (launchSettings / --urls). Isso permite porta atribuída automaticamente.
+var assignedPort = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(assignedPort))
+{
+    builder.WebHost.UseUrls($"http://localhost:{assignedPort}");
+}
+
 // ---------------------------------------------------------------------------
 // Serviços (injeção de dependência)
 // ---------------------------------------------------------------------------

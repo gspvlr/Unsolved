@@ -40,4 +40,13 @@ public static class DemoUi
         "Resolvido" => "st-solved",
         _ => "st-cold",   // Arquivado
     };
+
+    /// <summary>Classe CSS do "badge" de prioridade.</summary>
+    public static string PriorityClass(string priority) => priority switch
+    {
+        "Crítica" => "pr-critica",
+        "Alta" => "pr-alta",
+        "Baixa" => "pr-baixa",
+        _ => "pr-media",
+    };
 }

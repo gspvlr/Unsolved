@@ -3,6 +3,14 @@
     Layout = "_AdminLayout";
     ViewData["Title"] = "Painel";
     var m = ViewData["Metrics"] as DashboardMetrics;
+
+    var recent = Model.OrderByDescending(c => c.OpenedOn).Take(6).ToList();
+    // "Atividade" derivada do histórico de status real (case_status_history).
+    var activity = Model
+        .SelectMany(c => c.History.Select(h => new { c, h }))
+        .OrderByDescending(x => x.h.ChangedAt)
+        .Take(6)
+        .ToList();
 }
 
 <div class="admin-page-head">
@@ -10,14 +18,14 @@
     <a class="btn btn-primary btn-sm" href="/sistema/casos">Ver casos</a>
 </div>
 
-@* ---- KPIs ---- *@
+@* ---- KPIs (métricas do banco) ---- *@
 <div class="kpi-grid">
     <div class="kpi-card"><span class="kpi-label">Casos totais</span><span class="kpi-num" data-counter="@(m?.TotalCases ?? 0)">0</span></div>
     <div class="kpi-card"><span class="kpi-label">Em aberto</span><span class="kpi-num" data-counter="@(m?.OpenCases ?? 0)">0</span></div>
     <div class="kpi-card"><span class="kpi-label">Resolvidos</span><span class="kpi-num" data-counter="@(m?.SolvedCases ?? 0)">0</span></div>
     <div class="kpi-card"><span class="kpi-label">Evidências</span><span class="kpi-num" data-counter="@(m?.EvidenceItems ?? 0)">0</span></div>
     <div class="kpi-card"><span class="kpi-label">Pessoas</span><span class="kpi-num" data-counter="@(m?.PeopleTracked ?? 0)">0</span></div>
-    <div class="kpi-card"><span class="kpi-label">Equipe</span><span class="kpi-num" data-counter="@(m?.TeamMembers ?? 0)">0</span></div>
+    <div class="kpi-card"><span class="kpi-label">Investigadores</span><span class="kpi-num" data-counter="@(m?.Investigators ?? 0)">0</span></div>
 </div>
 
 <div class="admin-cols">
@@ -25,21 +33,17 @@
         <header class="panel-head"><h2>Casos recentes</h2></header>
         <table class="data-table">
             <thead>
-                <tr><th>Caso</th><th>Título</th><th>Status</th><th>Responsável</th><th>Progresso</th></tr>
+                <tr><th>Caso</th><th>Título</th><th>Cidade</th><th>Status</th><th>Progresso</th></tr>
             </thead>
             <tbody>
-                @foreach (var c in Model)
+                @foreach (var c in recent)
                 {
                     <tr>
-                        <td class="mono"><a href="/sistema/casos/@c.Id">@c.CaseNumber</a></td>
+                        <td class="mono"><a href="/sistema/casos/@c.Id">@c.CaseCode</a></td>
                         <td>@c.Title</td>
+                        <td>@c.City.Display</td>
                         <td><span class="status-badge @DemoUi.StatusClass(c.Status)">@c.Status</span></td>
-                        <td>@c.LeadInvestigator</td>
-                        <td>
-                            <div class="progress" title="@c.Progress%">
-                                <span style="width:@c.Progress%"></span>
-                            </div>
-                        </td>
+                        <td><div class="progress" title="@c.Progress%"><span style="width:@c.Progress%"></span></div></td>
                     </tr>
                 }
             </tbody>
@@ -47,12 +51,16 @@
     </section>
 
     <aside class="panel">
-        <header class="panel-head"><h2>Atividade</h2></header>
+        <header class="panel-head"><h2>Atividade recente</h2></header>
         <ul class="activity">
-            <li><span class="mono">14:02</span> Evidência EV-014-01 marcada como "Em análise".</li>
-            <li><span class="mono">11:37</span> Novo depoimento adicionado ao caso UNS-2026-014.</li>
-            <li><span class="mono">09:15</span> Caso UNS-2026-021 atualizado por Insp. C. Nogueira.</li>
-            <li><span class="mono">Ontem</span> Relatório mensal gerado.</li>
+            @foreach (var a in activity)
+            {
+                <li>
+                    <span class="mono">@a.h.ChangedAt.ToString("dd/MM/yyyy")</span>
+                    <a href="/sistema/casos/@a.c.Id">@a.c.CaseCode</a> →
+                    <strong>@a.h.NewStatus</strong>. @a.h.Reason
+                </li>
+            }
         </ul>
     </aside>
 </div>

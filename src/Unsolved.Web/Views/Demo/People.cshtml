@@ -1,41 +1,38 @@
-@model IReadOnlyList<Person>
+@model IReadOnlyList<PersonRoles>
 @{
     Layout = "_AdminLayout";
     ViewData["Title"] = "Pessoas";
+    string Tag(string role) => role switch { "Vítima" => "tag-vitima", "Suspeito" => "tag-suspeito", _ => "tag-testemunha" };
 }
 
 <div class="admin-page-head">
-    <h1>Pessoas</h1>
+    <h1>Pessoas <span class="count-badge">@Model.Count</span></h1>
     <button class="btn btn-primary btn-sm" type="button" disabled title="Disponível na versão completa">+ Cadastrar pessoa</button>
 </div>
 
-<section class="panel">
-    <header class="panel-head"><h2>Cadastro de pessoa</h2><span class="stamp-mini">PROTÓTIPO</span></header>
-    <form class="admin-form" onsubmit="return false;" aria-label="Cadastro de pessoa (demonstração)">
-        <div class="form-row">
-            <div class="field"><label>Nome</label><input type="text" placeholder="Nome completo" /></div>
-            <div class="field"><label>Tipo</label>
-                <select><option>Suspeito</option><option>Vítima</option><option>Testemunha</option></select>
-            </div>
-            <div class="field"><label>Idade</label><input type="number" min="0" placeholder="—" /></div>
-        </div>
-        <div class="field"><label>Observações</label><input type="text" placeholder="Observações" /></div>
-        <button class="btn btn-primary btn-sm" type="button" disabled>Salvar (demonstração)</button>
-    </form>
-</section>
+<p class="muted" style="margin-bottom:18px">
+    Registro único de pessoas (tabela <span class="mono">people</span>) reutilizado nos papéis de
+    vítima, suspeito e testemunha. Quem aparece em mais de um caso é destacado.
+</p>
 
 <section class="panel">
-    <header class="panel-head"><h2>Pessoas relacionadas (@Model.Count)</h2></header>
+    <header class="panel-head"><h2>Pessoas relacionadas</h2></header>
     <div class="people-grid">
-        @foreach (var p in Model)
+        @foreach (var r in Model)
         {
             <article class="person-card">
-                <span class="person-avatar" aria-hidden="true">@(p.Name.Length > 0 ? p.Name[0] : '?')</span>
+                <span class="person-avatar" aria-hidden="true">@r.Person.FullName[0]</span>
                 <div>
-                    <strong>@p.Name</strong>
-                    <span class="tag tag-@p.Type.ToLower()">@p.Type</span>
-                    @if (p.Age.HasValue) { <p class="muted">@p.Age anos</p> }
-                    @if (!string.IsNullOrEmpty(p.Notes)) { <p class="muted">@p.Notes</p> }
+                    <strong>@r.Person.FullName</strong>
+                    @foreach (var role in r.Roles)
+                    {
+                        <span class="tag @Tag(role)">@role</span>
+                    }
+                    @if (r.CaseAppearances > 1)
+                    {
+                        <span class="tag tag-primary">@r.CaseAppearances casos</span>
+                    }
+                    @if (!string.IsNullOrEmpty(r.Person.Notes)) { <p class="muted">@r.Person.Notes</p> }
                 </div>
             </article>
         }

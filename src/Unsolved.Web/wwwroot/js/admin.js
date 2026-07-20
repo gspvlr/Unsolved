@@ -69,4 +69,39 @@
             });
         });
     })();
+
+    /* ---------- Lightbox de fotos de evidência ---------- */
+    (function lightbox() {
+        const box = document.getElementById("lightbox");
+        if (!box) return;
+        const img = document.getElementById("lightbox-img");
+        const cap = document.getElementById("lightbox-cap");
+
+        function open(full, caption) {
+            img.src = full;
+            img.alt = caption || "";
+            cap.textContent = caption || "";
+            box.hidden = false;
+            document.body.style.overflow = "hidden";
+        }
+        function close() {
+            box.hidden = true;
+            img.src = "";
+            document.body.style.overflow = "";
+        }
+
+        // Delegação: qualquer elemento .js-lightbox com data-full abre o visor.
+        document.addEventListener("click", function (e) {
+            const trigger = e.target.closest(".js-lightbox");
+            if (trigger) {
+                e.preventDefault();
+                open(trigger.getAttribute("data-full"), trigger.getAttribute("data-caption"));
+                return;
+            }
+            if (e.target === box || e.target.closest(".lightbox-close")) close();
+        });
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape" && !box.hidden) close();
+        });
+    })();
 })();
