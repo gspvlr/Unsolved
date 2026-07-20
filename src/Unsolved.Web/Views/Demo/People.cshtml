@@ -2,40 +2,42 @@
 @{
     Layout = "_AdminLayout";
     ViewData["Title"] = "Pessoas";
-    string Tag(string role) => role switch { "Vítima" => "tag-vitima", "Suspeito" => "tag-suspeito", _ => "tag-testemunha" };
+
+    void RoleSection(string title, string cls, Func<PersonRoles, int> count)
+    {
+        var people = Model.Where(p => count(p) > 0).OrderByDescending(count).ToList();
+        <text>
+        <section class="panel">
+            <header class="panel-head"><h2>@title <span class="count-badge">@people.Count</span></h2></header>
+            <div class="people-grid">
+                @foreach (var r in people)
+                {
+                    <article class="person-card @cls">
+                        <div class="person-portrait">@Html.Raw(Avatars.Portrait(r.Person.FullName))</div>
+                        <div class="person-info">
+                            <strong>@r.Person.FullName</strong>
+                            <span class="person-sub">@count(r) caso(s) · @string.Join(" · ", r.Roles)</span>
+                            @if (!string.IsNullOrEmpty(r.Person.Notes)) { <p class="muted">@r.Person.Notes</p> }
+                        </div>
+                    </article>
+                }
+            </div>
+            <p class="empty-hint" hidden>Ninguém encontrado para esta busca.</p>
+        </section>
+        </text>
+    }
 }
 
 <div class="admin-page-head">
     <h1>Pessoas <span class="count-badge">@Model.Count</span></h1>
-    <button class="btn btn-primary btn-sm" type="button" disabled title="Disponível na versão completa">+ Cadastrar pessoa</button>
+    <button class="btn btn-primary btn-sm" type="button" disabled title="Disponível na versão completa">+ Cadastrar</button>
 </div>
 
 <p class="muted" style="margin-bottom:18px">
-    Registro único de pessoas (tabela <span class="mono">people</span>) reutilizado nos papéis de
-    vítima, suspeito e testemunha. Quem aparece em mais de um caso é destacado.
+    Registro único (tabela <span class="mono">people</span>) reutilizado nos papéis de vítima, suspeito e
+    testemunha. Retratos são ilustrações fictícias geradas pelo sistema.
 </p>
 
-<section class="panel">
-    <header class="panel-head"><h2>Pessoas relacionadas</h2></header>
-    <div class="people-grid">
-        @foreach (var r in Model)
-        {
-            <article class="person-card">
-                <span class="person-avatar" aria-hidden="true">@r.Person.FullName[0]</span>
-                <div>
-                    <strong>@r.Person.FullName</strong>
-                    @foreach (var role in r.Roles)
-                    {
-                        <span class="tag @Tag(role)">@role</span>
-                    }
-                    @if (r.CaseAppearances > 1)
-                    {
-                        <span class="tag tag-primary">@r.CaseAppearances casos</span>
-                    }
-                    @if (!string.IsNullOrEmpty(r.Person.Notes)) { <p class="muted">@r.Person.Notes</p> }
-                </div>
-            </article>
-        }
-    </div>
-    <p class="empty-hint" hidden>Nenhuma pessoa encontrada para esta busca.</p>
-</section>
+@{ RoleSection("Vítimas", "role-vitima", p => p.AsVictim); }
+@{ RoleSection("Suspeitos", "role-suspeito", p => p.AsSuspect); }
+@{ RoleSection("Testemunhas", "role-testemunha", p => p.AsWitness); }

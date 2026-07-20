@@ -41,7 +41,13 @@
                     <td>@c.CrimeOccurredOn.ToString("dd/MM/yyyy")</td>
                     <td><span class="status-badge @DemoUi.StatusClass(c.Status)">@c.Status</span></td>
                     <td><span class="prio @DemoUi.PriorityClass(c.Priority)">@c.Priority</span></td>
-                    <td>@(c.Lead?.FullName ?? "—")</td>
+                    <td>
+                        @if (c.Lead is not null)
+                        {
+                            <span class="lead-cell"><span class="lead-avatar">@Html.Raw(Avatars.Portrait(c.Lead.FullName))</span>@c.Lead.FullName</span>
+                        }
+                        else { <text>—</text> }
+                    </td>
                     <td class="mono">@c.Evidences.Count</td>
                 </tr>
             }

@@ -177,10 +177,11 @@ main { padding-top: var(--header-h); }
 .hero-trust li::before { content: "✓"; position: absolute; left: 0; color: var(--gold); font-weight: 700; }
 
 .hero-visual { position: relative; display: flex; align-items: center; justify-content: center; }
-.hero-logo-frame { position: relative; padding: 22px; border-radius: 50%;
+.hero-logo-frame { position: relative; width: min(440px, 92%); aspect-ratio: 1; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
     background: radial-gradient(circle, rgba(240, 216, 109, .16), transparent 68%);
     border: 1px dashed var(--line-strong); }
-.hero-logo { width: min(360px, 78%); height: auto; filter: drop-shadow(0 24px 44px rgba(0, 0, 0, .55)); position: relative; z-index: 2; }
+.hero-logo { width: 78%; height: auto; filter: drop-shadow(0 24px 44px rgba(0, 0, 0, .55)); position: relative; z-index: 2; }
 .scan-line { position: absolute; left: 8%; right: 8%; top: 12%; height: 2px; background: linear-gradient(90deg, transparent, var(--blue), transparent); opacity: .55; z-index: 3; }
 
 /* Mural investigativo de fundo do hero */

@@ -261,3 +261,70 @@
 .kanban-tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .kanban-tags .tag { margin: 0; }
 .kanban-empty { color: var(--ink-dim); font-size: .82rem; text-align: center; padding: 14px 0; margin: 0; }
+.kanban-card { cursor: grab; }
+.kanban-card.is-dragging { opacity: .5; cursor: grabbing; border-color: var(--gold); }
+.kanban-cards.is-over { outline: 2px dashed var(--gold); outline-offset: 2px; border-radius: var(--radius-sm); }
+
+/* ---------- Avatares "de desenho" (SVG) ---------- */
+.avatar-svg { display: block; width: 100%; height: 100%; }
+
+/* ---------- Equipe de investigadores (Usuários) ---------- */
+.team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.team-card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px;
+    background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 16px;
+    transition: border-color var(--transition), transform var(--transition); }
+.team-card:hover { border-color: var(--line-strong); transform: translateY(-3px); }
+.team-avatar { width: 84px; height: 84px; border-radius: 50%; overflow: hidden; border: 2px solid var(--line-strong); margin-bottom: 6px; }
+.team-card h3 { margin: 0; font-size: 1rem; color: var(--ink); }
+.team-spec { font-size: .82rem; color: var(--gold-soft); }
+.team-badge { font-size: .72rem; color: var(--ink-dim); }
+.team-stats { display: flex; gap: 14px; margin: 8px 0; font-size: .78rem; color: var(--ink-dim); }
+.team-stats strong { color: var(--gold); font-family: var(--font-display); font-size: 1.1rem; display: block; }
+
+/* ---------- Pessoas (retratos + papéis) ---------- */
+.person-card { display: flex; align-items: center; gap: 14px; }
+.person-portrait { flex: none; width: 56px; height: 56px; border-radius: 50%; overflow: hidden; border: 2px solid var(--line-strong); }
+.person-info strong { display: block; color: var(--ink); }
+.person-sub { font-size: .78rem; color: var(--ink-dim); }
+.person-card.role-vitima { border-left: 3px solid var(--danger); }
+.person-card.role-suspeito { border-left: 3px solid var(--gold); }
+.person-card.role-testemunha { border-left: 3px solid var(--blue); }
+
+/* ---------- Modal de tarefa (Kanban) ---------- */
+.task-modal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.task-modal[hidden] { display: none; }
+.task-modal-backdrop { position: absolute; inset: 0; background: rgba(10, 8, 4, .7); backdrop-filter: blur(3px); }
+.task-modal-panel { position: relative; z-index: 1; width: min(560px, 100%); max-height: 88vh; overflow-y: auto;
+    background: var(--bg-2); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow); }
+.task-modal-close { position: absolute; top: 12px; right: 14px; background: none; border: 0; color: var(--ink-dim); font-size: 1.6rem; line-height: 1; cursor: pointer; }
+.task-modal-close:hover { color: var(--gold); }
+.tm-code { color: var(--gold); font-size: .82rem; }
+.task-modal-panel h2 { margin: 4px 0 10px; color: var(--ink); font-size: 1.4rem; }
+.tm-badges { display: flex; gap: 8px; margin-bottom: 16px; }
+.tm-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 0 16px; }
+.tm-facts dt { font-size: .72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-dim); }
+.tm-facts dd { margin: 2px 0 0; color: var(--ink); font-size: .9rem; }
+.tm-stats { display: flex; flex-wrap: wrap; gap: 16px; padding: 14px; background: var(--bg-3); border-radius: var(--radius-sm); margin-bottom: 16px; font-size: .82rem; color: var(--ink-dim); }
+.tm-stats strong { color: var(--gold); font-family: var(--font-display); font-size: 1.2rem; margin-right: 4px; }
+.task-modal-panel h3 { color: var(--gold-soft); font-size: .95rem; margin: 0 0 6px; }
+.task-modal-panel #tm-desc { color: var(--ink-soft); font-size: .9rem; line-height: 1.5; margin: 0 0 18px; }
+
+/* ---------- Mural: pins mais interessantes ---------- */
+.pin-note::after, .pin-photo::after { content: ""; position: absolute; top: -26px; left: 50%; width: 2px; height: 26px;
+    background: linear-gradient(var(--pin, var(--danger)), transparent); transform: translateX(-50%) rotate(calc(var(--rot, 0deg) * -1)); opacity: .5; }
+.note-pin { background: radial-gradient(circle at 35% 30%, #fff6, var(--pin, var(--danger))); box-shadow: 0 3px 6px rgba(0,0,0,.5), inset -1px -1px 2px rgba(0,0,0,.3); }
+.board > article:nth-child(4n+1) { --pin: #cf6a4f; }
+.board > article:nth-child(4n+2) { --pin: #b5cdda; }
+.board > article:nth-child(4n+3) { --pin: #f0d86d; }
+.board > article:nth-child(4n)   { --pin: #8fbf8f; }
+.pin-note::before { content: ""; position: absolute; top: 8px; right: 10px; width: 34px; height: 14px;
+    background: rgba(255,255,255,.35); border: 1px solid rgba(0,0,0,.06); transform: rotate(6deg); box-shadow: 0 1px 2px rgba(0,0,0,.15); }
+
+/* Avatar em linha (responsável, atividade, linha do tempo) */
+.lead-cell { display: inline-flex; align-items: center; gap: 8px; }
+.lead-avatar { flex: none; width: 28px; height: 28px; border-radius: 50%; overflow: hidden; border: 1px solid var(--line-strong); }
+.activity-avatar { display: inline-block; vertical-align: middle; margin-right: 6px; }
+
+@media (max-width: 560px) {
+    .tm-facts { grid-template-columns: repeat(2, 1fr); }
+}

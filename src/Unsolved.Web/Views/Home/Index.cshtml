@@ -1,6 +1,25 @@
+@inject Unsolved.Services.IDemoDataService Demo
 @{
     ViewData["Title"] = null; // usa o título padrão do site
     ViewData["Description"] = "Unsolved: plataforma para gerenciar investigações, organizar evidências, acompanhar casos e colaborar entre equipes de segurança pública e privada.";
+
+    // Preview do hero alimentado pelos DADOS REAIS da demo (mesmo serviço do painel).
+    var mockMetrics = Demo.GetMetrics();
+    var mockCases = Demo.GetCases();
+    var mockProgress = mockCases.Count == 0 ? 0 : (int)Math.Round(mockCases.Average(c => c.Progress));
+    // Uma linha por status principal, apontando para o caso real.
+    var mockRows = new[] { CaseStatus.InProgress, CaseStatus.Reopening, CaseStatus.Solved }
+        .Select(s => mockCases.FirstOrDefault(c => c.Status == s))
+        .Where(c => c is not null).Cast<InvestigationCase>().ToList();
+    string StampClass(string status) => status switch
+    {
+        CaseStatus.Reopening => "stamp-mini stamp-review",
+        CaseStatus.Solved => "stamp-mini stamp-solved",
+        _ => "stamp-mini",
+    };
+    // Barras do mini-gráfico: distribuição real por status (decorativo, mas verídico).
+    var mockBars = CaseStatus.All.Select(s => mockCases.Count(c => c.Status == s)).ToList();
+    var mockBarMax = mockBars.DefaultIfEmpty(1).Max();
 }
 
 @* ==================== 1. HERO ==================== *@
@@ -111,17 +130,21 @@
                 <div class="device-bar"><span></span><span></span><span></span></div>
                 <div class="device-screen">
                     <div class="mini-dash">
-                        <div class="mini-kpi"><strong>128</strong><span>Casos</span></div>
-                        <div class="mini-kpi"><strong>62%</strong><span>Progresso médio</span></div>
-                        <div class="mini-kpi"><strong>1.5k</strong><span>Evidências</span></div>
+                        <div class="mini-kpi"><strong>@mockMetrics.TotalCases</strong><span>Casos</span></div>
+                        <div class="mini-kpi"><strong>@mockProgress%</strong><span>Progresso médio</span></div>
+                        <div class="mini-kpi"><strong>@mockMetrics.EvidenceItems</strong><span>Evidências</span></div>
                         <div class="mini-chart" aria-hidden="true">
-                            <span style="height:40%"></span><span style="height:70%"></span>
-                            <span style="height:55%"></span><span style="height:85%"></span>
-                            <span style="height:60%"></span><span style="height:95%"></span>
+                            @foreach (var b in mockBars)
+                            {
+                                <span style="height:@(20 + (mockBarMax == 0 ? 0 : b * 75 / mockBarMax))%"></span>
+                            }
                         </div>
-                        <div class="mini-row"><span class="stamp-mini">EM ANDAMENTO</span> UNS-2026-014</div>
-                        <div class="mini-row"><span class="stamp-mini stamp-review">EM REABERTURA</span> UNS-2026-021</div>
-                        <div class="mini-row"><span class="stamp-mini stamp-solved">RESOLVIDO</span> UNS-2025-198</div>
+                        @foreach (var c in mockRows)
+                        {
+                            <a class="mini-row" href="/sistema/casos/@c.Id">
+                                <span class="@StampClass(c.Status)">@c.Status.ToUpper()</span> @c.CaseCode
+                            </a>
+                        }
                     </div>
                 </div>
             </div>

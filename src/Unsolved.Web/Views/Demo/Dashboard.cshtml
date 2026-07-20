@@ -56,6 +56,7 @@
             @foreach (var a in activity)
             {
                 <li>
+                    @if (a.h.By is not null) { <span class="lead-avatar activity-avatar">@Html.Raw(Avatars.Portrait(a.h.By.FullName))</span> }
                     <span class="mono">@a.h.ChangedAt.ToString("dd/MM/yyyy")</span>
                     <a href="/sistema/casos/@a.c.Id">@a.c.CaseCode</a> →
                     <strong>@a.h.NewStatus</strong>. @a.h.Reason

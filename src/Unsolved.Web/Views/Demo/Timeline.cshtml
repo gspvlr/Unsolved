@@ -26,7 +26,10 @@
                     <a class="mono tl-case" href="/sistema/casos/@x.Case.Id">@x.Case.CaseCode</a>
                     <strong>@(x.Change.PreviousStatus is null ? "Abertura" : x.Change.PreviousStatus + " → ") @x.Change.NewStatus</strong>
                     <p>@x.Change.Reason</p>
-                    @if (x.Change.By is not null) { <span class="tag">@x.Change.By.FullName</span> }
+                    @if (x.Change.By is not null)
+                    {
+                        <span class="lead-cell"><span class="lead-avatar">@Html.Raw(Avatars.Portrait(x.Change.By.FullName))</span>@x.Change.By.FullName</span>
+                    }
                 </div>
             </li>
         }

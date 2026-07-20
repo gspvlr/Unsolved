@@ -11,6 +11,12 @@ do projeto. Os scripts executáveis do MySQL permanecem em [`../database`](../da
 
 ## Arquitetura de dados
 
+- [`architecture/diagrama-conceitual-unsolved.png`](architecture/diagrama-conceitual-unsolved.png)
+  — versão relacional com as referências PK/FK, pronta para README e apresentação.
+- [`architecture/diagrama-conceitual-unsolved.svg`](architecture/diagrama-conceitual-unsolved.svg)
+  — versão vetorial editável do diagrama relacional.
+- [`architecture/assets/unsolved-logo-transparente.png`](architecture/assets/unsolved-logo-transparente.png)
+  — mascote isolada em PNG com fundo transparente.
 - [`architecture/ERD.md`](architecture/ERD.md) — modelo relacional e regras de negócio.
 - [`architecture/erd.svg`](architecture/erd.svg) — diagrama pronto para visualização.
 - [`architecture/erd.dot`](architecture/erd.dot) — fonte editável do diagrama.

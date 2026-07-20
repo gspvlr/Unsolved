@@ -10,38 +10,23 @@
 
 <div class="admin-page-head">
     <h1>Investigadores <span class="count-badge">@Model.Count</span></h1>
-    <button class="btn btn-primary btn-sm" type="button" disabled title="Disponível na versão completa">+ Convidar investigador</button>
+    <button class="btn btn-primary btn-sm" type="button" disabled title="Disponível na versão completa">+ Convidar</button>
 </div>
 
-<section class="panel">
-    <header class="panel-head"><h2>Equipe (tabela investigators)</h2></header>
-    <table class="data-table">
-        <thead><tr><th>Investigador</th><th>Matrícula</th><th>Especialidade</th><th>Casos</th><th>Resolvidos</th><th>Situação</th></tr></thead>
-        <tbody>
-            @foreach (var i in Model)
-            {
-                <tr>
-                    <td><span class="person-avatar person-avatar-sm" aria-hidden="true">@i.FullName[0]</span> @i.FullName</td>
-                    <td class="mono">@i.Badge</td>
-                    <td>@i.Specialty</td>
-                    <td class="mono">@AssignedCount(i.Id)</td>
-                    <td class="mono">@ResolvedCount(i.Id)</td>
-                    <td>
-                        @if (i.Active) { <span class="status-badge st-solved">Ativo</span> }
-                        else { <span class="status-badge st-cold">Inativo</span> }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <p class="empty-hint" hidden>Nenhum investigador encontrado para esta busca.</p>
-</section>
-
-<section class="panel">
-    <header class="panel-head"><h2>Níveis de acesso <span class="stamp-mini">PLANEJADO</span></h2></header>
-    <div class="access-grid">
-        <div class="access-card"><h3>Administrador</h3><p>Acesso total: casos, usuários, configurações e auditoria.</p></div>
-        <div class="access-card"><h3>Editor</h3><p>Cria e edita casos, evidências e pessoas.</p></div>
-        <div class="access-card"><h3>Leitor</h3><p>Somente visualização dos casos permitidos.</p></div>
-    </div>
-</section>
+<div class="team-grid">
+    @foreach (var i in Model.OrderByDescending(i => ResolvedCount(i.Id)))
+    {
+        <article class="team-card">
+            <div class="team-avatar">@Html.Raw(Avatars.Portrait(i.FullName))</div>
+            <h3>@i.FullName</h3>
+            <span class="team-spec">@i.Specialty</span>
+            <span class="team-badge mono">@i.Badge</span>
+            <div class="team-stats">
+                <span><strong>@AssignedCount(i.Id)</strong> casos</span>
+                <span><strong>@ResolvedCount(i.Id)</strong> resolvidos</span>
+            </div>
+            @if (i.Active) { <span class="status-badge st-solved">Ativo</span> }
+            else { <span class="status-badge st-cold">Inativo</span> }
+        </article>
+    }
+</div>
