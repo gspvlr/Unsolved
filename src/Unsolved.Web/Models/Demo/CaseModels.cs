@@ -123,6 +123,14 @@ public class StatusChange
     public Investigator? By { get; set; }
 }
 
+/// <summary>Comentário no feed de atividades do caso (estilo Bitrix).</summary>
+public class CaseComment
+{
+    public string Author { get; set; } = string.Empty;
+    public string Text { get; set; } = string.Empty;
+    public DateTime At { get; set; }
+}
+
 /// <summary>Tabela cases + coleções relacionadas.</summary>
 public class InvestigationCase
 {
@@ -134,7 +142,7 @@ public class InvestigationCase
     public DateTime OpenedOn { get; set; }
     public DateTime? ClosedOn { get; set; }
     public City City { get; set; } = new();
-    public string Status { get; set; } = CaseStatus.InProgress;
+    public string Status { get; set; } = CaseStatus.Registro;
     public string Priority { get; set; } = "Média";        // Baixa | Média | Alta | Crítica
 
     public List<Victim> Victims { get; set; } = new();
@@ -143,6 +151,7 @@ public class InvestigationCase
     public List<CaseInvestigator> Team { get; set; } = new();
     public List<Evidence> Evidences { get; set; } = new();
     public List<StatusChange> History { get; set; } = new();
+    public List<CaseComment> Comments { get; set; } = new();
 
     /// <summary>Investigador responsável (is_lead ativo; senão o primeiro).</summary>
     public Investigator? Lead =>
@@ -156,36 +165,42 @@ public class InvestigationCase
          ?? Evidences.FirstOrDefault(e => e.Type is "Física" or "Biológica")
          ?? Evidences.FirstOrDefault())?.ImagePath;
 
-    /// <summary>Progresso ilustrativo derivado do status (o banco não guarda %).</summary>
+    /// <summary>Progresso derivado da posição no pipeline (ilustrativo).</summary>
     public int Progress => Status switch
     {
-        CaseStatus.Solved => 100,
-        CaseStatus.InProgress => 65,
-        CaseStatus.Reopening => 45,
-        _ => 25 // Arquivado
+        CaseStatus.Registro => 10,
+        CaseStatus.Triagem => 30,
+        CaseStatus.Investigacao => 50,
+        CaseStatus.Pericia => 70,
+        CaseStatus.Revisao => 85,
+        CaseStatus.Resolvido => 100,
+        _ => 100, // Arquivado (encerrado sem solução)
     };
 }
 
 /// <summary>
-/// Status do caso — ENUM ARQUIVADO/EM_REABERTURA/EM_ANDAMENTO/RESOLVIDO.
-/// Valores em PT-BR usados na exibição e nos filtros.
+/// Pipeline de estágios do caso (estilo CRM Bitrix). Ordem de <see cref="All"/>
+/// define as colunas do Kanban e a barra de estágios. Arquivado e Resolvido
+/// são terminais (fecham o caso).
 /// </summary>
 public static class CaseStatus
 {
-    public const string Archived = "Arquivado";
-    public const string Reopening = "Em reabertura";
-    public const string InProgress = "Em andamento";
-    public const string Solved = "Resolvido";
+    public const string Registro = "Registro";
+    public const string Triagem = "Triagem";
+    public const string Investigacao = "Investigação";
+    public const string Pericia = "Perícia";
+    public const string Revisao = "Revisão";
+    public const string Arquivado = "Arquivado";
+    public const string Resolvido = "Resolvido";
 
-    public static readonly string[] All = { Archived, Reopening, InProgress, Solved };
+    /// <summary>Pipeline na ordem de progressão (inclui os terminais no fim).</summary>
+    public static readonly string[] All =
+        { Registro, Triagem, Investigacao, Pericia, Revisao, Arquivado, Resolvido };
 
-    /// <summary>Converte o valor do ENUM do MySQL para exibição.</summary>
-    public static string FromDb(string value) => value switch
-    {
-        "ARQUIVADO" => Archived,
-        "EM_REABERTURA" => Reopening,
-        "EM_ANDAMENTO" => InProgress,
-        "RESOLVIDO" => Solved,
-        _ => value
-    };
+    /// <summary>Estágios que encerram o caso.</summary>
+    public static readonly string[] Terminal = { Arquivado, Resolvido };
+
+    public static bool IsTerminal(string status) => Terminal.Contains(status);
+    public static bool IsValid(string status) => All.Contains(status);
+    public static int Index(string status) => Array.IndexOf(All, status);
 }

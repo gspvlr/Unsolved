@@ -1,70 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
-using Unsolved.Services;
 
 namespace Unsolved.Controllers;
 
 /// <summary>
-/// Área DEMONSTRATIVA do sistema (protótipo visual do painel administrativo).
-/// Usa o layout _AdminLayout e consome dados fictícios do IDemoDataService.
-/// A estrutura já separa cada tela em uma action, pronta para receber
-/// funcionalidades reais no futuro.
+/// Área do sistema (/sistema): serve o SPA "Unsolved OS" (wwwroot/app).
+/// Toda a lógica, dados (IndexedDB) e roteamento ficam no cliente. Qualquer
+/// subcaminho de /sistema devolve o shell — o roteador por hash resolve a tela.
 /// </summary>
 [Route("sistema")]
 public class DemoController : Controller
 {
-    private readonly IDemoDataService _data;
+    private readonly IWebHostEnvironment _env;
 
-    public DemoController(IDemoDataService data) => _data = data;
+    public DemoController(IWebHostEnvironment env) => _env = env;
 
     [HttpGet("")]
-    [HttpGet("painel")]
-    public IActionResult Dashboard()
+    [HttpGet("{**rest}")]
+    public IActionResult App()
     {
-        ViewData["Metrics"] = _data.GetMetrics();
-        return View(_data.GetCases());
-    }
-
-    [HttpGet("casos")]
-    public IActionResult Cases() => View(_data.GetCases());
-
-    [HttpGet("casos/{id:int}")]
-    public IActionResult CaseDetails(int id)
-    {
-        var item = _data.GetCase(id);
-        if (item is null) return NotFound();
-        return View(item);
-    }
-
-    [HttpGet("evidencias")]
-    public IActionResult Evidence() => View(_data.GetAllEvidence());
-
-    [HttpGet("pessoas")]
-    public IActionResult People() => View(_data.GetPeopleWithRoles());
-
-    [HttpGet("linha-do-tempo")]
-    public IActionResult Timeline() => View(_data.GetCases());
-
-    [HttpGet("mural")]
-    public IActionResult Board() => View(_data.GetCases());
-
-    [HttpGet("kanban")]
-    public IActionResult Kanban() => View(_data.GetCases());
-
-    [HttpGet("relatorios")]
-    public IActionResult Reports()
-    {
-        ViewData["Metrics"] = _data.GetMetrics();
-        return View(_data.GetCases());
-    }
-
-    [HttpGet("configuracoes")]
-    public IActionResult Settings() => View();
-
-    [HttpGet("usuarios")]
-    public IActionResult Users()
-    {
-        // Investigadores (tabela investigators) + casos para computar atribuições/resolvidos.
-        ViewData["Cases"] = _data.GetCases();
-        return View(_data.GetInvestigators());
+        var path = Path.Combine(_env.WebRootPath, "app", "index.html");
+        return PhysicalFile(path, "text/html");
     }
 }

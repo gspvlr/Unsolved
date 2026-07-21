@@ -25,6 +25,7 @@ public static class Icons
         "shield" => "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.6'><path d='M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z'/><path d='m9 12 2 2 4-4'/></svg>",
         "key" => "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.6'><circle cx='8' cy='8' r='4'/><path d='m11 11 9 9M17 17l2-2M14 14l2-2'/></svg>",
         "database" => "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.6'><ellipse cx='12' cy='5' rx='7' ry='3'/><path d='M5 5v14c0 1.7 3.1 3 7 3s7-1.3 7-3V5'/><path d='M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3'/></svg>",
+        "chat" => "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.6'><path d='M4 5h16v11H8l-4 4V5Z'/><path d='M8 9h8M8 12h5'/></svg>",
         _ => "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.6'><circle cx='12' cy='12' r='9'/></svg>",
     };
 }
@@ -32,11 +33,14 @@ public static class Icons
 /// <summary>Helpers visuais da área demonstrativa.</summary>
 public static class DemoUi
 {
-    /// <summary>Classe CSS do "badge" de status de caso.</summary>
+    /// <summary>Classe CSS do "badge"/coluna por estágio do pipeline.</summary>
     public static string StatusClass(string status) => status switch
     {
-        "Em andamento" => "st-open",
-        "Em reabertura" => "st-review",
+        "Registro" => "st-registro",
+        "Triagem" => "st-triagem",
+        "Investigação" => "st-investigacao",
+        "Perícia" => "st-pericia",
+        "Revisão" => "st-revisao",
         "Resolvido" => "st-solved",
         _ => "st-cold",   // Arquivado
     };

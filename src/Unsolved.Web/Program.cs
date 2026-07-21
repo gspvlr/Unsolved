@@ -42,7 +42,16 @@ if (!app.Environment.IsDevelopment())
 app.UseStatusCodePagesWithReExecute("/Home/StatusCodeError", "?code={0}");
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();   // serve wwwroot (css, js, imagens)
+app.UseStaticFiles(new StaticFileOptions
+{
+    // O SPA em /app é atualizado com frequência: força revalidação (ETag)
+    // para que novas versões dos módulos ES cheguem ao cliente sem cache preso.
+    OnPrepareResponse = ctx =>
+    {
+        if (ctx.Context.Request.Path.StartsWithSegments("/app"))
+            ctx.Context.Response.Headers.CacheControl = "no-cache, must-revalidate";
+    }
+});
 app.UseRouting();
 
 app.MapControllerRoute(

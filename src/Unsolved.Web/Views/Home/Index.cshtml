@@ -8,13 +8,13 @@
     var mockCases = Demo.GetCases();
     var mockProgress = mockCases.Count == 0 ? 0 : (int)Math.Round(mockCases.Average(c => c.Progress));
     // Uma linha por status principal, apontando para o caso real.
-    var mockRows = new[] { CaseStatus.InProgress, CaseStatus.Reopening, CaseStatus.Solved }
+    var mockRows = new[] { CaseStatus.Investigacao, CaseStatus.Revisao, CaseStatus.Resolvido }
         .Select(s => mockCases.FirstOrDefault(c => c.Status == s))
         .Where(c => c is not null).Cast<InvestigationCase>().ToList();
     string StampClass(string status) => status switch
     {
-        CaseStatus.Reopening => "stamp-mini stamp-review",
-        CaseStatus.Solved => "stamp-mini stamp-solved",
+        CaseStatus.Revisao => "stamp-mini stamp-review",
+        CaseStatus.Resolvido => "stamp-mini stamp-solved",
         _ => "stamp-mini",
     };
     // Barras do mini-gráfico: distribuição real por status (decorativo, mas verídico).
@@ -299,8 +299,8 @@
         <div class="demo-explorer reveal" id="demo-explorer">
             <div class="demo-filters" role="group" aria-label="Filtrar casos por status">
                 <button class="filter-chip is-active" data-filter="all">Todos</button>
-                <button class="filter-chip" data-filter="Em andamento">Em andamento</button>
-                <button class="filter-chip" data-filter="Em reabertura">Em reabertura</button>
+                <button class="filter-chip" data-filter="Investigação">Investigação</button>
+                <button class="filter-chip" data-filter="Revisão">Revisão</button>
                 <button class="filter-chip" data-filter="Resolvido">Resolvido</button>
             </div>
 
@@ -308,21 +308,21 @@
                 <ul class="demo-caselist" id="demo-caselist">
                     @* Cada caso carrega seus dados em data-* para o JavaScript exibir o detalhe *@
                     <li>
-                        <button class="demo-caseitem is-selected" data-status="Em andamento"
+                        <button class="demo-caseitem is-selected" data-status="Investigação"
                                 data-number="UNS-2026-014" data-name="Desaparecimento no Porto Velho"
                                 data-lead="Insp. A. Marques" data-progress="62" data-evidence="3"
                                 data-suspects="1" data-timeline="Abertura → Coleta de imagens → Depoimento → Análise digital">
-                            <span class="stamp-mini">EM ANDAMENTO</span>
+                            <span class="stamp-mini">INVESTIGAÇÃO</span>
                             <strong>UNS-2026-014</strong>
                             <span>Desaparecimento no Porto Velho</span>
                         </button>
                     </li>
                     <li>
-                        <button class="demo-caseitem" data-status="Em reabertura"
+                        <button class="demo-caseitem" data-status="Revisão"
                                 data-number="UNS-2026-021" data-name="Fraude documental corporativa"
                                 data-lead="Insp. C. Nogueira" data-progress="78" data-evidence="2"
                                 data-suspects="1" data-timeline="Abertura → Coleta de logs → Perícia contábil">
-                            <span class="stamp-mini stamp-review">EM REABERTURA</span>
+                            <span class="stamp-mini stamp-review">REVISÃO</span>
                             <strong>UNS-2026-021</strong>
                             <span>Fraude documental corporativa</span>
                         </button>

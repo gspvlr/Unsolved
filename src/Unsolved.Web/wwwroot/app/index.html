@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Unsolved | Central de investigação</title>
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#201D12" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/app/css/tokens.css" />
+    <link rel="stylesheet" href="/app/css/app.css" />
+    <script>
+        // Aplica o tema salvo antes da renderização (evita flash).
+        try {
+            var p = JSON.parse(localStorage.getItem("unsolved-prefs") || "{}");
+            var initialTheme = p.theme || "dark";
+            document.documentElement.setAttribute("data-theme", initialTheme);
+            var approvedAccents = ["#F0D86D", "#B0863A", "#B5CDDA"];
+            var lightAccents = { "#F0D86D": "#9a6f14", "#B0863A": "#8B6220", "#B5CDDA": "#4f7d92" };
+            if (approvedAccents.includes(p.accent)) document.documentElement.style.setProperty("--accent", initialTheme === "light" ? lightAccents[p.accent] : p.accent);
+        } catch (e) {}
+    </script>
+</head>
+<body>
+    <div id="app"></div>
+    <script type="module" src="/app/js/app.js"></script>
+</body>
+</html>

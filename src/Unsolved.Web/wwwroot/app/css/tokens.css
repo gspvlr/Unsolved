@@ -1,0 +1,157 @@
+/* ============================================================================
+   Unsolved OS — Design tokens
+   Alinhado à identidade da marca (projeto principal): dourado sobre preto
+   amarronzado, títulos em Fraunces, azul acinzentado secundário, textura de
+   impressão digital. Tema escuro (dossiê) + claro (pergaminho) via [data-theme].
+   ============================================================================ */
+
+@font-face {
+    font-family: "Inter";
+    src: url("/fonts/inter.woff2") format("woff2");
+    font-weight: 100 900; font-display: swap;
+}
+@font-face {
+    font-family: "Fraunces";
+    src: url("/fonts/fraunces.woff2") format("woff2");
+    font-weight: 400 900; font-display: swap;
+}
+
+:root {
+    /* ---- Marca ---- */
+    --brand-gold: #F0D86D;
+    --brand-gold-soft: #f6e6a3;
+    --brand-brown: #8B6220;
+    --brand-brown-2: #B0863A;
+    --brand-blue: #B5CDDA;
+    --brand-dark: #201D12;
+
+    /* ---- Acento (= dourado da marca) ---- */
+    --accent: #F0D86D;
+    --accent-2: #B5CDDA;   /* azul acinzentado (tecnologia/segurança) */
+    --accent-3: #B0863A;   /* bronze */
+    --accent-ink: #201D12; /* texto sobre preenchimento dourado */
+    --accent-glow: rgba(240, 216, 109, .28);
+
+    /* ---- Semânticos (harmonizados ao quente) ---- */
+    --success: #9ac07a;
+    --warning: #e0b357;
+    --danger: #cf6a4f;
+    --info: #B5CDDA;
+
+    /* ---- Estágios do pipeline ---- */
+    --stage-registro: #9a9075;
+    --stage-triagem: #B0863A;
+    --stage-investigacao: #F0D86D;
+    --stage-pericia: #B5CDDA;
+    --stage-revisao: #c58fae;
+    --stage-arquivado: #6f6650;
+    --stage-resolvido: #9ac07a;
+
+    /* ---- Prioridade ---- */
+    --pr-critica: #cf6a4f;
+    --pr-alta: #e0b357;
+    --pr-media: #B5CDDA;
+    --pr-baixa: #9a9075;
+
+    /* ---- Raio ---- */
+    --r-xs: 3px; --r-sm: 5px; --r-md: 8px; --r-lg: 10px; --r-pill: 999px;
+
+    /* ---- Tipografia ---- */
+    --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-mono: "Courier New", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+    /* ---- Transições ---- */
+    --t-fast: 120ms cubic-bezier(.4, 0, .2, 1);
+    --t: 220ms cubic-bezier(.4, 0, .2, 1);
+    --t-slow: 420ms cubic-bezier(.16, 1, .3, 1);
+
+    /* ---- Camadas ---- */
+    --z-topbar: 40; --z-sidebar: 50; --z-overlay: 90; --z-modal: 100; --z-toast: 120; --z-menu: 130;
+
+    /* Textura de impressão digital (marca), reutilizada nos fundos */
+    --fingerprint: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' stroke='%23f0d86d' stroke-opacity='0.04' stroke-width='1.4'%3E%3Cpath d='M110 40c-26 0-46 20-46 46 0 30 10 60 46 90'/%3E%3Cpath d='M110 55c-18 0-32 14-32 34 0 26 10 52 40 80'/%3E%3Cpath d='M110 70c-11 0-19 9-19 22 0 22 12 46 34 72'/%3E%3Cpath d='M110 86c-4 0-7 4-7 9 0 20 14 44 30 62'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ============================ TEMA ESCURO (dossiê) ======================== */
+:root, :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #201D12;
+    --bg-grad:
+        radial-gradient(1100px 700px at 82% -6%, rgba(240, 216, 109, .10), transparent 58%),
+        radial-gradient(900px 600px at 8% 4%, rgba(139, 98, 32, .16), transparent 55%),
+        radial-gradient(circle at 85% 82%, rgba(181, 205, 218, .05), transparent 45%),
+        var(--fingerprint),
+        #201D12;
+    --surface-1: rgba(39, 36, 23, .82);
+    --surface-2: rgba(49, 44, 27, .86);
+    --surface-3: rgba(60, 53, 31, .82);
+    --surface-solid: #272417;
+    --surface-solid-2: #312c1b;
+    --glass: rgba(30, 28, 18, .78);
+    --glass-strong: rgba(22, 21, 14, .94);
+
+    --line: rgba(240, 216, 109, .14);
+    --line-2: rgba(240, 216, 109, .22);
+    --line-strong: rgba(240, 216, 109, .34);
+
+    --title: #fbf5e4;
+    --ink: #ece3cb;
+    --ink-2: #c6bc9c;
+    --ink-3: #9a9075;
+    --ink-4: #6f6650;
+
+    --shadow-sm: 0 8px 20px rgba(16, 12, 4, .34);
+    --shadow: 0 18px 44px rgba(16, 12, 4, .48);
+    --shadow-lg: 0 34px 74px rgba(16, 12, 4, .62);
+    --glow: 0 0 0 1px rgba(240, 216, 109, .2), 0 14px 36px rgba(139, 98, 32, .16);
+}
+
+/* ============================ TEMA CLARO (pergaminho) ==================== */
+:root[data-theme="light"] {
+    color-scheme: light;
+    /* No claro, o acento vira bronze-dourado (legível sobre pergaminho) */
+    --accent: #9a6f14;
+    --accent-2: #4f7d92;
+    --accent-3: #8B6220;
+    --accent-ink: #fff8e6;
+    --accent-glow: rgba(139, 98, 32, .3);
+
+    --success: #4f7a3a; --warning: #a06a12; --danger: #b5432b; --info: #4f7d92;
+    --stage-registro: #6f6650; --stage-triagem: #8B6220; --stage-investigacao: #9a6f14;
+    --stage-pericia: #4f7d92; --stage-revisao: #8a5f7d; --stage-arquivado: #7a6f4f; --stage-resolvido: #4f7a3a;
+    --pr-critica: #b5432b; --pr-alta: #a06a12; --pr-media: #4f7d92; --pr-baixa: #7a6f4f;
+
+    --bg: #efe8d6;
+    --bg-grad:
+        radial-gradient(1100px 700px at 82% -6%, rgba(139, 98, 32, .12), transparent 58%),
+        radial-gradient(900px 600px at 8% 4%, rgba(176, 134, 58, .10), transparent 55%),
+        var(--fingerprint),
+        #efe8d6;
+    --surface-1: rgba(255, 252, 243, .86);
+    --surface-2: rgba(250, 245, 232, .94);
+    --surface-3: rgba(244, 238, 222, .96);
+    --surface-solid: #fffdf6;
+    --surface-solid-2: #f5efdf;
+    --glass: rgba(255, 252, 244, .72);
+    --glass-strong: rgba(252, 248, 238, .9);
+
+    --line: rgba(139, 98, 32, .16);
+    --line-2: rgba(139, 98, 32, .26);
+    --line-strong: rgba(139, 98, 32, .4);
+
+    --title: #241d0e;
+    --ink: #2b2414;
+    --ink-2: #5b5137;
+    --ink-3: #877a58;
+    --ink-4: #b0a683;
+
+    --shadow-sm: 0 6px 16px rgba(80, 60, 20, .1);
+    --shadow: 0 16px 38px rgba(80, 60, 20, .14);
+    --shadow-lg: 0 34px 70px rgba(80, 60, 20, .2);
+    --glow: 0 0 0 1px rgba(139, 98, 32, .3), 0 14px 40px rgba(139, 98, 32, .16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root { --t-fast: 1ms; --t: 1ms; --t-slow: 1ms; }
+}

@@ -54,8 +54,8 @@ public class DemoDataService : IDemoDataService
 
     public DashboardMetrics GetMetrics() => new(
         TotalCases: _cases.Count,
-        OpenCases: _cases.Count(c => c.Status is CaseStatus.InProgress or CaseStatus.Reopening),
-        SolvedCases: _cases.Count(c => c.Status == CaseStatus.Solved),
+        OpenCases: _cases.Count(c => !CaseStatus.IsTerminal(c.Status)),
+        SolvedCases: _cases.Count(c => c.Status == CaseStatus.Resolvido),
         EvidenceItems: _cases.Sum(c => c.Evidences.Count),
         PeopleTracked: GetPeopleWithRoles().Count,
         Investigators: _investigators.Count);
@@ -168,7 +168,7 @@ public class DemoDataService : IDemoDataService
                 Id = 1, CaseCode = "UNS-1998-001", Title = "A Mala da Estação",
                 CrimeDescription = "Desaparecimento seguido da localização de objetos pessoais em uma mala abandonada na estação central.",
                 CrimeOccurredOn = D(1998,8,14), OpenedOn = D(1998,8,15), City = C(3),
-                Status = CaseStatus.Archived, Priority = "Alta",
+                Status = CaseStatus.Arquivado, Priority = "Alta",
                 Victims = { Vic(1, 29, "Fotógrafa", "Pessoa desaparecida e proprietária dos objetos.", "Trabalhava em reportagens urbanas.") },
                 Suspects = { Susp(13, "M. Torres", 30, "Assinatura semelhante em recibo encontrado na mala.", true) },
                 Witnesses =
@@ -190,8 +190,8 @@ public class DemoDataService : IDemoDataService
                 },
                 History =
                 {
-                    new() { PreviousStatus = null, NewStatus = CaseStatus.InProgress, ChangedAt = D(1998,8,15).AddHours(9), Reason = "Abertura do inquérito.", By = I(1) },
-                    new() { PreviousStatus = CaseStatus.InProgress, NewStatus = CaseStatus.Archived, ChangedAt = D(2000,3,1).AddHours(17.5), Reason = "Esgotamento das diligências disponíveis.", By = I(1) },
+                    new() { PreviousStatus = null, NewStatus = CaseStatus.Investigacao, ChangedAt = D(1998,8,15).AddHours(9), Reason = "Abertura do inquérito.", By = I(1) },
+                    new() { PreviousStatus = CaseStatus.Investigacao, NewStatus = CaseStatus.Arquivado, ChangedAt = D(2000,3,1).AddHours(17.5), Reason = "Esgotamento das diligências disponíveis.", By = I(1) },
                 },
             },
             new()
@@ -199,7 +199,7 @@ public class DemoDataService : IDemoDataService
                 Id = 2, CaseCode = "UNS-2001-014", Title = "Ecos do Viaduto",
                 CrimeDescription = "Homicídio sem autoria definida ocorrido sob um viaduto, com documentos possivelmente adulterados.",
                 CrimeOccurredOn = D(2001,4,21), OpenedOn = D(2001,4,21), City = C(1),
-                Status = CaseStatus.Archived, Priority = "Crítica",
+                Status = CaseStatus.Arquivado, Priority = "Crítica",
                 Victims = { Vic(2, 35, "Comerciante", "Vítima fatal localizada no local.", "Mantinha comércio no centro e fazia cobranças externas.") },
                 Suspects =
                 {
@@ -226,8 +226,8 @@ public class DemoDataService : IDemoDataService
                 },
                 History =
                 {
-                    new() { PreviousStatus = null, NewStatus = CaseStatus.InProgress, ChangedAt = D(2001,4,21).AddHours(11), Reason = "Abertura do inquérito.", By = I(3) },
-                    new() { PreviousStatus = CaseStatus.InProgress, NewStatus = CaseStatus.Archived, ChangedAt = D(2004,1,15).AddHours(16), Reason = "Ausência de prova suficiente para denúncia.", By = I(3) },
+                    new() { PreviousStatus = null, NewStatus = CaseStatus.Investigacao, ChangedAt = D(2001,4,21).AddHours(11), Reason = "Abertura do inquérito.", By = I(3) },
+                    new() { PreviousStatus = CaseStatus.Investigacao, NewStatus = CaseStatus.Arquivado, ChangedAt = D(2004,1,15).AddHours(16), Reason = "Ausência de prova suficiente para denúncia.", By = I(3) },
                 },
             },
             new()
@@ -235,7 +235,7 @@ public class DemoDataService : IDemoDataService
                 Id = 3, CaseCode = "UNS-2003-022", Title = "Arquivo do Porto",
                 CrimeDescription = "Desaparecimento de pesquisadora e retirada irregular de caixas do arquivo portuário.",
                 CrimeOccurredOn = D(2003,11,2), OpenedOn = D(2003,11,3), City = C(4),
-                Status = CaseStatus.Reopening, Priority = "Crítica",
+                Status = CaseStatus.Pericia, Priority = "Crítica",
                 Victims = { Vic(3, 26, "Pesquisadora", "Pessoa desaparecida durante pesquisa documental.", "Estudava registros de cargas antigas.") },
                 Suspects =
                 {
@@ -265,9 +265,9 @@ public class DemoDataService : IDemoDataService
                 },
                 History =
                 {
-                    new() { PreviousStatus = null, NewStatus = CaseStatus.InProgress, ChangedAt = D(2003,11,3).AddHours(8.67), Reason = "Abertura do inquérito.", By = I(3) },
-                    new() { PreviousStatus = CaseStatus.InProgress, NewStatus = CaseStatus.Archived, ChangedAt = D(2007,6,20).AddHours(14.33), Reason = "Diligências encerradas sem localização da vítima.", By = I(3) },
-                    new() { PreviousStatus = CaseStatus.Archived, NewStatus = CaseStatus.Reopening, ChangedAt = D(2025,4,11).AddHours(10.25), Reason = "Nova técnica permitiu recuperar índice digital.", By = I(4) },
+                    new() { PreviousStatus = null, NewStatus = CaseStatus.Investigacao, ChangedAt = D(2003,11,3).AddHours(8.67), Reason = "Abertura do inquérito.", By = I(3) },
+                    new() { PreviousStatus = CaseStatus.Investigacao, NewStatus = CaseStatus.Arquivado, ChangedAt = D(2007,6,20).AddHours(14.33), Reason = "Diligências encerradas sem localização da vítima.", By = I(3) },
+                    new() { PreviousStatus = CaseStatus.Arquivado, NewStatus = CaseStatus.Revisao, ChangedAt = D(2025,4,11).AddHours(10.25), Reason = "Nova técnica permitiu recuperar índice digital.", By = I(4) },
                 },
             },
             new()
@@ -275,7 +275,7 @@ public class DemoDataService : IDemoDataService
                 Id = 4, CaseCode = "UNS-2004-031", Title = "Noite no Catete",
                 CrimeDescription = "Morte de jornalista após encontro não identificado; gravações originais não foram localizadas.",
                 CrimeOccurredOn = D(2004,7,19), OpenedOn = D(2004,7,20), City = C(2),
-                Status = CaseStatus.Archived, Priority = "Alta",
+                Status = CaseStatus.Arquivado, Priority = "Alta",
                 Victims = { Vic(4, 41, "Jornalista", "Vítima fatal e autor de anotações apreendidas.", "Investigava contratos e empresas de fachada.") },
                 Suspects = { Susp(13, "M. Torres", 36, "Número associado a ele aparece nas anotações da vítima.", false) },
                 Witnesses =
@@ -292,8 +292,8 @@ public class DemoDataService : IDemoDataService
                 },
                 History =
                 {
-                    new() { PreviousStatus = null, NewStatus = CaseStatus.InProgress, ChangedAt = D(2004,7,20).AddHours(7.83), Reason = "Abertura do inquérito.", By = I(1) },
-                    new() { PreviousStatus = CaseStatus.InProgress, NewStatus = CaseStatus.Archived, ChangedAt = D(2008,2,2).AddHours(12), Reason = "Provas técnicas inconclusivas.", By = I(1) },
+                    new() { PreviousStatus = null, NewStatus = CaseStatus.Investigacao, ChangedAt = D(2004,7,20).AddHours(7.83), Reason = "Abertura do inquérito.", By = I(1) },
+                    new() { PreviousStatus = CaseStatus.Investigacao, NewStatus = CaseStatus.Arquivado, ChangedAt = D(2008,2,2).AddHours(12), Reason = "Provas técnicas inconclusivas.", By = I(1) },
                 },
             },
             new()
@@ -301,7 +301,7 @@ public class DemoDataService : IDemoDataService
                 Id = 5, CaseCode = "UNS-2009-008", Title = "Sinal Interrompido",
                 CrimeDescription = "Desaparecimento durante pane simultânea em antenas e câmeras de uma central de telecomunicações.",
                 CrimeOccurredOn = D(2009,1,30), OpenedOn = D(2009,1,30), City = C(5),
-                Status = CaseStatus.InProgress, Priority = "Alta",
+                Status = CaseStatus.Investigacao, Priority = "Alta",
                 Victims = { Vic(5, 27, "Técnica de telecomunicações", "Pessoa desaparecida durante o turno.", "Tinha acesso aos equipamentos de sinal.") },
                 Suspects = { Susp(16, "P. Monte", 25, "Credencial usada durante a pane simultânea.", true) },
                 Witnesses = { Wit(26, "Contato atualizado sob sigilo", "Detectou comandos manuais antes da pane geral.", "Alta", D(2009,1,31), 20) },
@@ -315,14 +315,14 @@ public class DemoDataService : IDemoDataService
                     Ev(14, "EV-2009-008-A", "Registro de comandos executados localmente.", "Digital", D(2009,1,30), "Servidor da central", "Em análise", 2),
                     Ev(15, "EV-2009-008-B", "Crachá usado durante a interrupção.", "Física", D(2009,1,31), "Sala de antenas", "Armazenada", 2),
                 },
-                History = { new() { PreviousStatus = null, NewStatus = CaseStatus.InProgress, ChangedAt = D(2009,1,30).AddHours(23.17), Reason = "Abertura do inquérito.", By = I(2) } },
+                History = { new() { PreviousStatus = null, NewStatus = CaseStatus.Investigacao, ChangedAt = D(2009,1,30).AddHours(23.17), Reason = "Abertura do inquérito.", By = I(2) } },
             },
             new()
             {
                 Id = 6, CaseCode = "UNS-2012-019", Title = "Quarto 312",
                 CrimeDescription = "Homicídio em hotel esclarecido após confronto de registros de acesso e perfil genético.",
                 CrimeOccurredOn = D(2012,5,11), OpenedOn = D(2012,5,11), ClosedOn = D(2018,2,20), City = C(6),
-                Status = CaseStatus.Solved, Priority = "Média",
+                Status = CaseStatus.Resolvido, Priority = "Média",
                 Victims = { Vic(6, 38, "Representante comercial", "Vítima fatal no quarto 312.", "Viajava semanalmente pela região.") },
                 Suspects = { Susp(18, "N. Ferraz", 22, "Registro de acesso e DNA vincularam a suspeita ao quarto.", true) },
                 Witnesses = { Wit(25, "Contato atualizado sob sigilo", "Viu a suspeita usar o elevador de serviço.", "Alta", D(2012,5,12), 46) },
@@ -339,8 +339,8 @@ public class DemoDataService : IDemoDataService
                 },
                 History =
                 {
-                    new() { PreviousStatus = null, NewStatus = CaseStatus.InProgress, ChangedAt = D(2012,5,11).AddHours(15), Reason = "Abertura do inquérito.", By = I(3) },
-                    new() { PreviousStatus = CaseStatus.InProgress, NewStatus = CaseStatus.Solved, ChangedAt = D(2018,2,20).AddHours(13.5), Reason = "DNA e controle de acesso confirmaram a autoria.", By = I(3) },
+                    new() { PreviousStatus = null, NewStatus = CaseStatus.Investigacao, ChangedAt = D(2012,5,11).AddHours(15), Reason = "Abertura do inquérito.", By = I(3) },
+                    new() { PreviousStatus = CaseStatus.Investigacao, NewStatus = CaseStatus.Resolvido, ChangedAt = D(2018,2,20).AddHours(13.5), Reason = "DNA e controle de acesso confirmaram a autoria.", By = I(3) },
                 },
             },
             new()
@@ -348,7 +348,7 @@ public class DemoDataService : IDemoDataService
                 Id = 7, CaseCode = "UNS-2015-027", Title = "Rota 17",
                 CrimeDescription = "Desaparecimento de motorista durante trajeto alterado sem autorização.",
                 CrimeOccurredOn = D(2015,9,3), OpenedOn = D(2015,9,4), City = C(1),
-                Status = CaseStatus.Archived, Priority = "Alta",
+                Status = CaseStatus.Arquivado, Priority = "Alta",
                 Victims = { Vic(7, 33, "Motorista", "Pessoa desaparecida durante o trajeto.", "Conhecia rotas alternativas da empresa.") },
                 Suspects =
                 {
@@ -364,8 +364,8 @@ public class DemoDataService : IDemoDataService
                 },
                 History =
                 {
-                    new() { PreviousStatus = null, NewStatus = CaseStatus.InProgress, ChangedAt = D(2015,9,4).AddHours(6), Reason = "Abertura do inquérito.", By = I(4) },
-                    new() { PreviousStatus = CaseStatus.InProgress, NewStatus = CaseStatus.Archived, ChangedAt = D(2019,9,4).AddHours(18), Reason = "Ausência de localização da vítima e de prova conclusiva.", By = I(4) },
+                    new() { PreviousStatus = null, NewStatus = CaseStatus.Investigacao, ChangedAt = D(2015,9,4).AddHours(6), Reason = "Abertura do inquérito.", By = I(4) },
+                    new() { PreviousStatus = CaseStatus.Investigacao, NewStatus = CaseStatus.Arquivado, ChangedAt = D(2019,9,4).AddHours(18), Reason = "Ausência de localização da vítima e de prova conclusiva.", By = I(4) },
                 },
             },
             new()
@@ -373,7 +373,7 @@ public class DemoDataService : IDemoDataService
                 Id = 8, CaseCode = "UNS-2018-042", Title = "A Chave Azul",
                 CrimeDescription = "Invasão seguida de homicídio solucionada por impressão digital e registro de chave codificada.",
                 CrimeOccurredOn = D(2018,12,17), OpenedOn = D(2018,12,17), ClosedOn = D(2021,6,10), City = C(7),
-                Status = CaseStatus.Solved, Priority = "Média",
+                Status = CaseStatus.Resolvido, Priority = "Média",
                 Victims = { Vic(8, 31, "Arquiteto", "Vítima fatal no imóvel invadido.", "Colecionava fechaduras e chaves raras.") },
                 Suspects = { Susp(19, "B. Six", 27, "Impressão digital e ferramenta localizada na cena.", true) },
                 Witnesses = { Wit(26, "Contato atualizado sob sigilo", "Recuperou o registro da fechadura antes da substituição.", "Alta", D(2018,12,18), 30) },
@@ -390,8 +390,8 @@ public class DemoDataService : IDemoDataService
                 },
                 History =
                 {
-                    new() { PreviousStatus = null, NewStatus = CaseStatus.InProgress, ChangedAt = D(2018,12,17).AddHours(22), Reason = "Abertura do inquérito.", By = I(3) },
-                    new() { PreviousStatus = CaseStatus.InProgress, NewStatus = CaseStatus.Solved, ChangedAt = D(2021,6,10).AddHours(9.75), Reason = "Impressão e log de acesso confirmaram a autoria.", By = I(3) },
+                    new() { PreviousStatus = null, NewStatus = CaseStatus.Investigacao, ChangedAt = D(2018,12,17).AddHours(22), Reason = "Abertura do inquérito.", By = I(3) },
+                    new() { PreviousStatus = CaseStatus.Investigacao, NewStatus = CaseStatus.Resolvido, ChangedAt = D(2021,6,10).AddHours(9.75), Reason = "Impressão e log de acesso confirmaram a autoria.", By = I(3) },
                 },
             },
             new()
@@ -399,7 +399,7 @@ public class DemoDataService : IDemoDataService
                 Id = 9, CaseCode = "UNS-2021-011", Title = "Maré Baixa",
                 CrimeDescription = "Desaparecimento de pescadora após embarcação retornar sem tripulação.",
                 CrimeOccurredOn = D(2021,3,22), OpenedOn = D(2021,3,22), City = C(8),
-                Status = CaseStatus.InProgress, Priority = "Alta",
+                Status = CaseStatus.Pericia, Priority = "Alta",
                 Victims = { Vic(9, 31, "Pescadora", "Pessoa desaparecida da embarcação.", "Experiente e conhecia a costa local.") },
                 Suspects = { Susp(20, "E. Moura", 37, "Foi visto próximo ao cais e conhecia os acessos.", true) },
                 Witnesses = { Wit(27, "Contato atualizado sob sigilo", "Viu uma segunda embarcação sem luzes perto do cais.", "Média", D(2021,3,23), 44) },
@@ -410,14 +410,14 @@ public class DemoDataService : IDemoDataService
                     Ev(23, "EV-2021-011-B", "Amostra biológica no corrimão.", "Biológica", D(2021,3,23), "Popa da embarcação", "Em análise", 5,
                         An("DNA", "Pendente", false, Ago(months: 2), null, "Laboratório Nacional de Genética", null)),
                 },
-                History = { new() { PreviousStatus = null, NewStatus = CaseStatus.InProgress, ChangedAt = D(2021,3,22).AddHours(20), Reason = "Abertura do inquérito.", By = I(3) } },
+                History = { new() { PreviousStatus = null, NewStatus = CaseStatus.Investigacao, ChangedAt = D(2021,3,22).AddHours(20), Reason = "Abertura do inquérito.", By = I(3) } },
             },
             new()
             {
                 Id = 10, CaseCode = "UNS-2023-006", Title = "Linha de Cinza",
                 CrimeDescription = "Morte suspeita em prédio comercial reaberta após recuperação de imagens apagadas.",
                 CrimeOccurredOn = D(2023,6,9), OpenedOn = D(2023,6,9), City = C(2),
-                Status = CaseStatus.Reopening, Priority = "Crítica",
+                Status = CaseStatus.Revisao, Priority = "Crítica",
                 Victims = { Vic(10, 30, "Operador de manutenção", "Vítima fatal no prédio comercial.", "Responsável por acessos técnicos.") },
                 Suspects = { Susp(19, "B. Six", 32, "Software encontrado no notebook recuperado.", true) },
                 Witnesses = { Wit(26, "Contato atualizado sob sigilo", "Confirmou exclusão remota das imagens na madrugada.", "Alta", D(2023,6,10), 35) },
@@ -435,9 +435,9 @@ public class DemoDataService : IDemoDataService
                 },
                 History =
                 {
-                    new() { PreviousStatus = null, NewStatus = CaseStatus.InProgress, ChangedAt = D(2023,6,9).AddHours(12), Reason = "Abertura do inquérito.", By = I(2) },
-                    new() { PreviousStatus = CaseStatus.InProgress, NewStatus = CaseStatus.Archived, ChangedAt = D(2024,6,9).AddHours(12), Reason = "Imagens originais indisponíveis.", By = I(2) },
-                    new() { PreviousStatus = CaseStatus.Archived, NewStatus = CaseStatus.Reopening, ChangedAt = D(2025,2,4).AddHours(9.5), Reason = "Recuperação parcial das imagens apagadas.", By = I(2) },
+                    new() { PreviousStatus = null, NewStatus = CaseStatus.Investigacao, ChangedAt = D(2023,6,9).AddHours(12), Reason = "Abertura do inquérito.", By = I(2) },
+                    new() { PreviousStatus = CaseStatus.Investigacao, NewStatus = CaseStatus.Arquivado, ChangedAt = D(2024,6,9).AddHours(12), Reason = "Imagens originais indisponíveis.", By = I(2) },
+                    new() { PreviousStatus = CaseStatus.Arquivado, NewStatus = CaseStatus.Revisao, ChangedAt = D(2025,2,4).AddHours(9.5), Reason = "Recuperação parcial das imagens apagadas.", By = I(2) },
                 },
             },
             new()
@@ -445,7 +445,7 @@ public class DemoDataService : IDemoDataService
                 Id = 11, CaseCode = "UNS-2024-018", Title = "Sala Sem Janela",
                 CrimeDescription = "Desaparecimento em escritório com acesso controlado e sem registro de saída.",
                 CrimeOccurredOn = D(2024,10,12), OpenedOn = D(2024,10,12), City = C(1),
-                Status = CaseStatus.Archived, Priority = "Alta",
+                Status = CaseStatus.Arquivado, Priority = "Alta",
                 Victims = { Vic(11, 35, "Analista administrativa", "Pessoa desaparecida no escritório.", "Trabalhava com contratos internos.") },
                 Suspects = { Susp(18, "Nadia M.", 35, "Credencial temporária registrada sem justificativa.", true) },
                 Witnesses = { Wit(28, "Contato atualizado sob sigilo", "Entregou um pacote na recepção e viu a vítima entrar na sala.", "Alta", D(2024,10,13), 28) },
@@ -457,8 +457,8 @@ public class DemoDataService : IDemoDataService
                 },
                 History =
                 {
-                    new() { PreviousStatus = null, NewStatus = CaseStatus.InProgress, ChangedAt = D(2024,10,12).AddHours(19.33), Reason = "Abertura do inquérito.", By = I(1) },
-                    new() { PreviousStatus = CaseStatus.InProgress, NewStatus = CaseStatus.Archived, ChangedAt = D(2025,10,12).AddHours(17), Reason = "Sem novos vestígios após um ano de diligências.", By = I(1) },
+                    new() { PreviousStatus = null, NewStatus = CaseStatus.Investigacao, ChangedAt = D(2024,10,12).AddHours(19.33), Reason = "Abertura do inquérito.", By = I(1) },
+                    new() { PreviousStatus = CaseStatus.Investigacao, NewStatus = CaseStatus.Arquivado, ChangedAt = D(2025,10,12).AddHours(17), Reason = "Sem novos vestígios após um ano de diligências.", By = I(1) },
                 },
             },
             new()
@@ -466,7 +466,7 @@ public class DemoDataService : IDemoDataService
                 Id = 12, CaseCode = "UNS-2026-004", Title = "Último Bilhete",
                 CrimeDescription = "Mensageiro desaparecido após registrar uma entrega sem destinatário confirmado.",
                 CrimeOccurredOn = D(2026,2,15), OpenedOn = D(2026,2,15), City = C(4),
-                Status = CaseStatus.InProgress, Priority = "Crítica",
+                Status = CaseStatus.Triagem, Priority = "Crítica",
                 Victims = { Vic(12, 30, "Mensageiro", "Pessoa desaparecida após uma entrega.", "Atendia rotas sob demanda por aplicativo.") },
                 Suspects = { Susp(20, "Elias M.", 42, "Recebeu mensagem do aparelho da vítima.", true) },
                 Witnesses = { Wit(28, "Contato atualizado sob sigilo", "Recebeu rota semelhante e percebeu endereço inexistente.", "Alta", D(2026,2,16), 29) },
@@ -482,7 +482,7 @@ public class DemoDataService : IDemoDataService
                     Ev(30, "EV-2026-004-C", "Material biológico em embalagem de entrega.", "Biológica", Ago(days: 30), "Depósito de encomendas", "Em análise", 5,
                         An("DNA", "Pendente", false, Ago(days: 25), null, "Laboratório Nacional de Genética", null)),
                 },
-                History = { new() { PreviousStatus = null, NewStatus = CaseStatus.InProgress, ChangedAt = D(2026,2,15).AddHours(18), Reason = "Abertura do inquérito.", By = I(4) } },
+                History = { new() { PreviousStatus = null, NewStatus = CaseStatus.Investigacao, ChangedAt = D(2026,2,15).AddHours(18), Reason = "Abertura do inquérito.", By = I(4) } },
             },
         };
 
