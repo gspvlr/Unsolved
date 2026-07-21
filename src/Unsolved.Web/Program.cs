@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Unsolved.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,17 @@ if (!string.IsNullOrWhiteSpace(assignedPort))
 // Serviços (injeção de dependência)
 // ---------------------------------------------------------------------------
 builder.Services.AddControllersWithViews();
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "unsolved.demo.session";
+        options.LoginPath = "/account/login";
+        options.AccessDeniedPath = "/account/login";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;
+    });
+builder.Services.AddAuthorization();
 
 // Serviço de contato: hoje grava as mensagens em memória / log.
 // Amanhã, basta trocar a implementação por uma que persista no SQL Server,
@@ -53,6 +65,8 @@ app.UseStaticFiles(new StaticFileOptions
     }
 });
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

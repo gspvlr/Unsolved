@@ -20,4 +20,6 @@ public class LoginViewModel
 
     [Display(Name = "Manter conectado")]
     public bool RememberMe { get; set; }
+
+    public string? ReturnUrl { get; set; }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Unsolved.Controllers;
@@ -8,6 +9,7 @@ namespace Unsolved.Controllers;
 /// subcaminho de /sistema devolve o shell — o roteador por hash resolve a tela.
 /// </summary>
 [Route("sistema")]
+[Authorize]
 public class DemoController : Controller
 {
     private readonly IWebHostEnvironment _env;

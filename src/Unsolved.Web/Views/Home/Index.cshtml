@@ -11,15 +11,6 @@
     var mockRows = new[] { CaseStatus.Investigacao, CaseStatus.Revisao, CaseStatus.Resolvido }
         .Select(s => mockCases.FirstOrDefault(c => c.Status == s))
         .Where(c => c is not null).Cast<InvestigationCase>().ToList();
-    string StampClass(string status) => status switch
-    {
-        CaseStatus.Revisao => "stamp-mini stamp-review",
-        CaseStatus.Resolvido => "stamp-mini stamp-solved",
-        _ => "stamp-mini",
-    };
-    // Barras do mini-gráfico: distribuição real por status (decorativo, mas verídico).
-    var mockBars = CaseStatus.All.Select(s => mockCases.Count(c => c.Status == s)).ToList();
-    var mockBarMax = mockBars.DefaultIfEmpty(1).Max();
 }
 
 @* ==================== 1. HERO ==================== *@
@@ -124,31 +115,81 @@
             <a class="btn btn-primary" href="/recursos">Ver todos os recursos</a>
         </div>
 
-        @* Mockup de dashboard em um "monitor" *@
-        <div class="solution-visual reveal">
-            <div class="device-monitor">
-                <div class="device-bar"><span></span><span></span><span></span></div>
-                <div class="device-screen">
-                    <div class="mini-dash">
-                        <div class="mini-kpi"><strong>@mockMetrics.TotalCases</strong><span>Casos</span></div>
-                        <div class="mini-kpi"><strong>@mockProgress%</strong><span>Progresso médio</span></div>
-                        <div class="mini-kpi"><strong>@mockMetrics.EvidenceItems</strong><span>Evidências</span></div>
-                        <div class="mini-chart" aria-hidden="true">
-                            @foreach (var b in mockBars)
-                            {
-                                <span style="height:@(20 + (mockBarMax == 0 ? 0 : b * 75 / mockBarMax))%"></span>
-                            }
-                        </div>
-                        @foreach (var c in mockRows)
+        @* Prévia interativa: altera apenas este modelo visual, sem persistir na base. *@
+        <div class="solution-visual demo-preview reveal" data-demo-preview>
+            <div class="preview-window">
+                <div class="preview-titlebar">
+                    <div class="preview-lights" aria-hidden="true"><span></span><span></span><span></span></div>
+                    <span class="preview-title">UNSOLVED / CENTRAL DE TESTE</span>
+                    <span class="preview-live"><i></i> simulação ativa</span>
+                </div>
+
+                <div class="preview-toolbar">
+                    <div>
+                        <span class="preview-overline">MODELO EDITÁVEL</span>
+                        <b>Edite um caso de exemplo</b>
+                    </div>
+                    <span>As mudanças abaixo não são salvas</span>
+                </div>
+
+                <div class="preview-kpis">
+                    <div><span>Casos</span><strong data-preview-total>@mockMetrics.TotalCases</strong></div>
+                    <div><span>Progresso médio</span><strong data-preview-average>@mockProgress%</strong></div>
+                    <div><span>Evidências</span><strong>@mockMetrics.EvidenceItems</strong></div>
+                </div>
+
+                <div class="preview-workspace">
+                    <div class="preview-case-list" aria-label="Casos de demonstração">
+                        @for (var i = 0; i < mockRows.Count; i++)
                         {
-                            <a class="mini-row" href="/sistema/casos/@c.Id">
-                                <span class="@StampClass(c.Status)">@c.Status.ToUpper()</span> @c.CaseCode
-                            </a>
+                            var c = mockRows[i];
+                            <button type="button" class="preview-case @(i == 0 ? "is-active" : "")"
+                                    data-preview-case
+                                    data-code="@c.CaseCode"
+                                    data-title="@c.Title"
+                                    data-status="@c.Status"
+                                    data-progress="@c.Progress">
+                                <span class="preview-case-marker"></span>
+                                <span><b>@c.Title</b><small>@c.CaseCode</small></span>
+                                <em>@c.Status</em>
+                            </button>
                         }
+                    </div>
+
+                    <div class="preview-editor">
+                        <div class="preview-editor-head">
+                            <span class="mono" data-preview-code>@mockRows.FirstOrDefault()?.CaseCode</span>
+                            <b data-preview-title>@mockRows.FirstOrDefault()?.Title</b>
+                        </div>
+                        <label>
+                            Estágio do caso
+                            <select data-preview-status>
+                                @foreach (var status in new[] { CaseStatus.Investigacao, CaseStatus.Revisao, CaseStatus.Resolvido })
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            </select>
+                        </label>
+                        <label>
+                            <span>Progresso <b data-preview-progress>@(mockRows.FirstOrDefault()?.Progress ?? 0)%</b></span>
+                            <input type="range" min="0" max="100" step="1" value="@(mockRows.FirstOrDefault()?.Progress ?? 0)" data-preview-range />
+                        </label>
+                        <div class="preview-permission-note">
+                            <i></i><span>Teste rápido</span>
+                            <p>Na central real, cada perfil vê apenas as ações permitidas.</p>
+                        </div>
                     </div>
                 </div>
             </div>
-            <a class="device-cta" href="/account/login">Abrir demonstração do sistema →</a>
+
+            <div class="demo-entry-cta">
+                <div>
+                    <span class="mono">PRÓXIMA ETAPA</span>
+                    <b>Entre com um dos três níveis de acesso</b>
+                    <small>Administrador, detetive responsável ou usuário de consulta.</small>
+                </div>
+                <a class="btn btn-primary" href="/account/login">Escolher perfil e abrir demo →</a>
+            </div>
         </div>
     </div>
 </section>
@@ -417,4 +458,5 @@
 @section Scripts {
     @* Explorador interativo de casos — usado só nesta página. *@
     <script src="~/js/demo.js" asp-append-version="true" defer></script>
+    <script src="~/js/demo-preview.js" asp-append-version="true" defer></script>
 }

@@ -8,20 +8,22 @@ import { toast, attachContextMenu } from "../ui.js";
 import { getFilter, setFilter, kanbanState, setColCollapsed, setColOrder } from "../store.js";
 import { moveStage, caseMenu, openCaseModal } from "./cases.js";
 import { portraitStack } from "../media.js";
+import { canCreateCase, canEditCase, isViewer, visibleCases, visibleEvidence, visiblePeople } from "../auth.js";
 
 let users = [], people = [], evidence = [];
 const userName = (id) => users.find(u => u.id === id)?.name || "";
 
 export default async function renderKanban(container) {
     clear(container);
-    container.appendChild(pageHead("Kanban", "Arraste os casos entre estágios — tudo salvo automaticamente", [
-        el("button.btn.primary", { html: icon("plus") + "Novo caso", onclick: () => openCaseModal() }),
+    container.appendChild(pageHead("Kanban", isViewer() ? "Acompanhe a distribuição dos casos em modo somente leitura" : "Arraste os casos autorizados entre estágios — tudo salvo automaticamente", [
+        canCreateCase() ? el("button.btn.primary", { html: icon("plus") + "Novo caso", onclick: () => openCaseModal() }) : null,
     ]));
 
     const f = getFilter("kanban", { q: "", prio: "all", lead: "all" });
     const board = el("div.kanban-system");
-    let cases;
-    [cases, users, people, evidence] = await Promise.all([all("cases"), all("users"), all("people"), all("evidence")]);
+    let cases, rawCases;
+    const [loadedCases, loadedUsers, loadedPeople, loadedEvidence] = await Promise.all([all("cases"), all("users"), all("people"), all("evidence")]);
+    rawCases = loadedCases; cases = visibleCases(rawCases); users = loadedUsers; people = visiblePeople(loadedPeople, rawCases); evidence = visibleEvidence(loadedEvidence);
     container.appendChild(toolbar(f, users, () => paint()));
     const wrap = el("div.kanban-wrap", {}, [board]);
     container.appendChild(wrap);
@@ -62,8 +64,8 @@ export default async function renderKanban(container) {
             items.forEach(c => bodyEl.appendChild(kcard(c)));
             bodyEl.appendChild(el("div.kcol-drophint", { text: "Solte aqui", style: { display: "none" } }));
             col.appendChild(bodyEl);
-            col.appendChild(el("div.kcol-add", {}, [el("button.btn.sm.ghost", { style: { width: "100%" }, html: icon("plus") + "Adicionar", onclick: () => openCaseModal({ status: stage, priority: "Média", type: "Homicídio" }) })]));
-            enableDrop(bodyEl, stage);
+            if (canCreateCase()) col.appendChild(el("div.kcol-add", {}, [el("button.btn.sm.ghost", { style: { width: "100%" }, html: icon("plus") + "Adicionar", onclick: () => openCaseModal({ status: stage, priority: "Média", type: "Homicídio" }) })]));
+            if (!isViewer()) enableDrop(bodyEl, stage);
             target.appendChild(col);
         }
 
@@ -83,13 +85,14 @@ export default async function renderKanban(container) {
     }
     paint();
 
-    async function reload() { cases = await all("cases"); paint(); }
+    async function reload() { rawCases = await all("cases"); cases = visibleCases(rawCases); paint(); }
     window.__kanbanReload = reload;
 
     function kcard(c) {
         const linkedPeople = (c.people || []).map(link => people.find(person => person.id === link.personId)).filter(Boolean);
         const evidenceCount = evidence.filter(item => item.caseId === c.id).length;
-        const card = el("div.kcard", { draggable: "true", dataset: { id: c.id }, onclick: () => navigate("casos/" + c.id) }, [
+        const writable = canEditCase(c);
+        const card = el("div.kcard", { draggable: writable ? "true" : "false", dataset: { id: c.id }, onclick: () => navigate("casos/" + c.id) }, [
             el("span.kc-prio", { style: { background: `var(--pr-${prioClass(c.priority).slice(5)})` } }),
             el("span.kc-code", { text: c.code }),
             el("h4", { text: c.title }),
@@ -106,8 +109,10 @@ export default async function renderKanban(container) {
                 el("span.right", {}, [el("span", { html: icon("clock") }), fmtDate(c.updatedAt)]),
             ]),
         ]);
-        card.addEventListener("dragstart", (e) => { card.classList.add("dragging"); e.dataTransfer.setData("text/plain", c.id); e.dataTransfer.effectAllowed = "move"; });
-        card.addEventListener("dragend", () => card.classList.remove("dragging"));
+        if (writable) {
+            card.addEventListener("dragstart", (e) => { card.classList.add("dragging"); e.dataTransfer.setData("text/plain", c.id); e.dataTransfer.effectAllowed = "move"; });
+            card.addEventListener("dragend", () => card.classList.remove("dragging"));
+        }
         attachContextMenu(card, () => caseMenu(c));
         return card;
     }
@@ -121,7 +126,7 @@ export default async function renderKanban(container) {
             const ids = Array.from(zone.querySelectorAll(".kcard")).map(n => n.dataset.id);
             setColOrder(stage, ids);
             const c = cases.find(x => x.id === id);
-            if (c && c.status !== stage) { await moveStage(id, stage, true); c.status = stage; toast(`${c.code} → ${stage}`, { type: "info", title: "Estágio atualizado" }); }
+            if (c && canEditCase(c) && c.status !== stage) { await moveStage(id, stage, true); c.status = stage; toast(`${c.code} → ${stage}`, { type: "info", title: "Estágio atualizado" }); }
             paint();
         });
     }

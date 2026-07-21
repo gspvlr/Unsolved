@@ -1,47 +1,113 @@
 @model LoginViewModel
 @{
-    ViewData["Title"] = "Acessar sistema";
-    ViewData["Description"] = "Acesso à demonstração do sistema Unsolved.";
+    ViewData["Title"] = "Acessar demonstração";
+    ViewData["Description"] = "Escolha um perfil e acesse a base demonstrativa do sistema Unsolved.";
+    var profiles = ViewData["DemoProfiles"] as IReadOnlyList<DemoAccessProfile> ?? [];
 }
 
-<section class="auth-wrap">
-    <div class="auth-card reveal">
-        <div class="auth-head">
-            <img src="~/images/logo.png" alt="Unsolved" width="64" height="64" />
-            <h1>Acessar o sistema</h1>
-            <p class="disclaimer">Acesso demonstrativo — use qualquer e-mail e senha válidos no formato.</p>
+<section class="access-entry">
+    <div class="access-entry-grid">
+        <div class="access-intro reveal">
+            <a class="access-back" href="/">← Voltar ao site</a>
+            <span class="access-kicker"><i></i> Central demonstrativa</span>
+            <h1>Escolha até onde você pode investigar.</h1>
+            <p>
+                A mesma base muda conforme o perfil. Teste a visão completa do administrador,
+                o trabalho focado do detetive ou a consulta protegida de um usuário comum.
+            </p>
+
+            <div class="demo-warning" role="note">
+                <span>BASE TESTE</span>
+                <div>
+                    <b>Ambiente exclusivamente demonstrativo</b>
+                    <small>Dados fictícios e alterações armazenadas somente neste navegador.</small>
+                </div>
+            </div>
+
+            <div class="access-profiles" aria-label="Perfis disponíveis para teste">
+                @foreach (var profile in profiles)
+                {
+                    var initials = string.Concat(profile.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(part => part[0]));
+                    <button type="button"
+                            class="access-profile-card"
+                            data-demo-profile
+                            data-profile-id="@profile.Id"
+                            data-email="@profile.Email"
+                            data-password="@profile.Password"
+                            aria-pressed="false">
+                        <span class="profile-seal">@initials</span>
+                        <span class="profile-copy">
+                            <span class="profile-title-row">
+                                <b>@profile.Title</b>
+                                <em>@profile.AccessLevel</em>
+                            </span>
+                            <small>@profile.Description</small>
+                            @if (profile.AssignedCaseId is not null)
+                            {
+                                <span class="profile-case"><strong>@profile.AssignedCaseCode</strong> · @profile.AssignedCaseTitle</span>
+                            }
+                        </span>
+                        <span class="profile-action">Usar perfil →</span>
+                    </button>
+                }
+            </div>
         </div>
 
-        @* Formulário com validação de servidor (ModelState) + validação de cliente (validation.js) *@
-        <form asp-controller="Account" asp-action="Login" method="post" class="auth-form js-validate" novalidate>
-            @Html.AntiForgeryToken()
-
-            <div class="field">
-                <label asp-for="Email">E-mail</label>
-                <input asp-for="Email" type="email" autocomplete="username" required />
-                <small class="field-error" data-error-for="Email">@Html.ValidationMessageFor(m => m.Email)</small>
+        <div class="access-form-panel reveal">
+            <div class="access-form-head">
+                <img src="~/images/logo.png" alt="Unsolved" width="72" height="72" />
+                <div>
+                    <span class="mono">PORTAL DE ACESSO · DEMO</span>
+                    <h2>Identificação</h2>
+                    <p>Selecione um perfil ao lado ou digite uma credencial de teste.</p>
+                </div>
             </div>
 
-            <div class="field">
-                <label asp-for="Password">Senha</label>
-                <input asp-for="Password" type="password" autocomplete="current-password" required />
-                <small class="field-error" data-error-for="Password">@Html.ValidationMessageFor(m => m.Password)</small>
+            <form asp-controller="Account" asp-action="Login" method="post" class="auth-form js-validate" novalidate>
+                @Html.AntiForgeryToken()
+                <input asp-for="ReturnUrl" type="hidden" />
+
+                <div asp-validation-summary="ModelOnly" class="auth-summary" role="alert"></div>
+
+                <div class="selected-access" data-selected-access>
+                    <span class="selected-access-dot"></span>
+                    <div><b>Nenhum perfil selecionado</b><small>Escolha uma credencial demonstrativa.</small></div>
+                </div>
+
+                <div class="field">
+                    <label asp-for="Email">E-mail de acesso</label>
+                    <input asp-for="Email" type="email" autocomplete="username" placeholder="nome@unsolved.demo" required />
+                    <small class="field-error" data-error-for="Email">@Html.ValidationMessageFor(m => m.Email)</small>
+                </div>
+
+                <div class="field">
+                    <label asp-for="Password">Senha</label>
+                    <div class="password-field">
+                        <input asp-for="Password" type="password" autocomplete="current-password" placeholder="Senha demonstrativa" required />
+                        <button type="button" data-password-toggle aria-label="Mostrar senha">Mostrar</button>
+                    </div>
+                    <small class="field-error" data-error-for="Password">@Html.ValidationMessageFor(m => m.Password)</small>
+                </div>
+
+                <label class="checkbox access-remember">
+                    <input asp-for="RememberMe" type="checkbox" />
+                    <span>Manter esta sessão demonstrativa conectada</span>
+                </label>
+
+                <button type="submit" class="btn btn-primary btn-block access-submit">
+                    Entrar na central <span>→</span>
+                </button>
+            </form>
+
+            <div class="access-permission-key">
+                <span><i class="key-admin"></i> Total</span>
+                <span><i class="key-detective"></i> Caso atribuído</span>
+                <span><i class="key-viewer"></i> Leitura</span>
             </div>
-
-            <label class="checkbox">
-                <input asp-for="RememberMe" type="checkbox" /> Manter conectado
-            </label>
-
-            <button type="submit" class="btn btn-primary btn-block">Entrar</button>
-        </form>
-
-        <p class="auth-foot">
-            Não tem acesso? <a href="#" data-open-demo>Solicite uma demonstração</a>.
-        </p>
-    </div>
-
-    <div class="auth-aside" aria-hidden="true">
-        <span class="stamp">CONFIDENCIAL</span>
-        <p class="mono">CASO Nº UNS-2026-014</p>
+        </div>
     </div>
 </section>
+
+@section Scripts {
+    <script src="~/js/login-demo.js" asp-append-version="true" defer></script>
+}

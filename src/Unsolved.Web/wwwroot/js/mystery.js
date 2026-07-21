@@ -115,8 +115,9 @@
     let buffer = "";
     document.addEventListener("keydown", function (e) {
         if (e.target && /^(input|textarea|select)$/i.test(e.target.tagName)) return;
-        if (e.key.length !== 1) return;
-        buffer = (buffer + e.key.toLowerCase()).slice(-8);
+        const pressedKey = typeof e.key === "string" ? e.key : "";
+        if (pressedKey.length !== 1) return;
+        buffer = (buffer + pressedKey.toLowerCase()).slice(-8);
         if (buffer.indexOf("pista") !== -1) {
             if (clueEls.length) { clueEls.forEach(pulse); }
             foundSecret("pista", clueEls.length ? "digitou \"pista\" — pistas destacadas" : "digitou \"pista\"");
@@ -131,7 +132,9 @@
         "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
     let kpos = 0;
     document.addEventListener("keydown", function (e) {
-        const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+        const pressedKey = typeof e.key === "string" ? e.key : "";
+        if (!pressedKey) return;
+        const k = pressedKey.length === 1 ? pressedKey.toLowerCase() : pressedKey;
         kpos = (k === KONAMI[kpos]) ? kpos + 1 : (k === KONAMI[0] ? 1 : 0);
         if (kpos === KONAMI.length) {
             kpos = 0;

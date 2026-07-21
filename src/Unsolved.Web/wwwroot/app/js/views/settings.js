@@ -6,6 +6,7 @@ import { navigate } from "../router.js";
 import { pageHead } from "../widgets.js";
 import { toast, confirmDialog } from "../ui.js";
 import { prefs, applyTheme, toggleTheme, recentViews } from "../store.js";
+import { accessCopy, canManageData, currentUser } from "../auth.js";
 
 const ACCENTS = ["#F0D86D", "#B0863A", "#B5CDDA"];
 
@@ -31,7 +32,7 @@ export default async function renderSettings(container) {
     ]));
 
     // Dados & Backup
-    grid.appendChild(section("col-6", "Dados e backup", "layers", [
+    if (canManageData()) grid.appendChild(section("col-6", "Dados e backup", "layers", [
         el("div.set-row", {}, [el("div.s-main", {}, [el("b", { text: "Exportar dados" }), el("span", { text: "Baixa um backup JSON de tudo (casos, pessoas, evidências…)" })]),
             el("button.btn", { html: icon("download") + "Exportar", onclick: doExport })]),
         el("div.set-row", {}, [el("div.s-main", {}, [el("b", { text: "Importar dados" }), el("span", { text: "Restaura de um backup JSON (substitui os dados atuais)" })]),
@@ -39,9 +40,19 @@ export default async function renderSettings(container) {
         el("div.set-row", {}, [el("div.s-main", {}, [el("b", { text: "Restaurar dados de exemplo" }), el("span", { text: "Apaga tudo e recria o conjunto inicial" })]),
             el("button.btn.danger", { html: icon("trash") + "Redefinir", onclick: doReset })]),
     ]));
+    else {
+        const access = accessCopy(), user = currentUser();
+        grid.appendChild(section("col-6", "Permissões desta sessão", "lock", [
+            el("div.permission-session-card", {}, [
+                el("span.tag", { text: access.label }),
+                el("b", { text: access.level }),
+                el("p", { text: user.assignedCaseCode ? `Você pode editar somente ${user.assignedCaseCode} — ${user.assignedCaseTitle}.` : "Você pode navegar e consultar os registros, sem alterar a base demonstrativa." }),
+            ]),
+        ]));
+    }
 
     // Integrações (preparado)
-    grid.appendChild(section("col-6", "Integrações", "link", [
+    if (canManageData()) grid.appendChild(section("col-6", "Integrações", "link", [
         integ("Banco de dados MySQL", "Sincronização quando o backend estiver ativo", "Em breve"),
         integ("Bitrix24", "Importar/exportar casos", "Em breve"),
         integ("Armazenamento de mídia", "Upload de evidências", "Em breve"),

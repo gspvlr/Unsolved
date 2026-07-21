@@ -8,6 +8,7 @@ import { skeleton, emptyState } from "../ui.js";
 import { getFilter, setFilter } from "../store.js";
 import { evidencePhoto as sharedEvidencePhoto, portraitStyle as sharedPortraitStyle } from "../media.js";
 import { openCaseLinks } from "./cases.js";
+import { canEditCase, visibleCases, visibleEvidence, visiblePeople } from "../auth.js";
 
 const BOARD = { width: 1200, height: 720 };
 const CASE_POS = { x: 466, y: 252, w: 278, h: 202 };
@@ -54,9 +55,12 @@ export default async function renderBoard(container) {
     clear(container);
     container.appendChild(skeleton("cards", 6));
 
-    const [cases, people, evidence, users] = await Promise.all([
+    const [rawCases, rawPeople, rawEvidence, users] = await Promise.all([
         all("cases"), all("people"), all("evidence"), all("users"),
     ]);
+    const cases = visibleCases(rawCases);
+    const people = visiblePeople(rawPeople, rawCases);
+    const evidence = visibleEvidence(rawEvidence);
     clear(container);
 
     const query = new URLSearchParams((location.hash.split("?")[1] || ""));
@@ -152,7 +156,7 @@ function caseWallCard(c, linkedPeople, linkedEvidence, users) {
         el("div.case-wall-preview", {}, [
             el("span.preview-thread.thread-a"),
             el("span.preview-thread.thread-b"),
-            firstPerson ? el("div.preview-portrait", { style: sharedPortraitStyle(firstPerson.id), role: "img", "aria-label": `Retrato ilustrado de ${firstPerson.name}` }) : null,
+            firstPerson ? el("div.preview-portrait", { style: sharedPortraitStyle(firstPerson), role: "img", "aria-label": `Retrato ilustrado de ${firstPerson.name}` }) : null,
             firstEvidence ? sharedEvidencePhoto(firstEvidence, "preview-evidence") : el("div.preview-evidence.missing"),
             el("span.preview-pin.pin-a"),
             el("span.preview-pin.pin-b"),
@@ -182,11 +186,11 @@ function renderCaseBoard(container, c, cases, people, evidence, users) {
     const linkedEvidence = allLinkedEvidence.slice(0, EVIDENCE_POSITIONS.length);
     const lead = users.find(u => u.id === c.leadId)?.name || "Não atribuído";
     const context = CASE_CONTEXT[c.id] || { clue: c.description, question: "Qual ligação ainda falta confirmar?" };
-    const manageLinks = () => openCaseLinks(c, people, evidence, { onChanged: () => renderBoard(container) });
+    const manageLinks = canEditCase(c) ? () => openCaseLinks(c, people, evidence, { onChanged: () => renderBoard(container) }) : null;
 
     container.appendChild(pageHead(c.title, `${c.code} · Quadro de vínculos da investigação`, [
         el("button.btn", { html: icon("chevronL") + "Todos os casos", onclick: () => { location.hash = "#/mural"; } }),
-        el("button.btn", { html: icon("link") + "Gerenciar vínculos", onclick: manageLinks }),
+        manageLinks ? el("button.btn", { html: icon("link") + "Gerenciar vínculos", onclick: manageLinks }) : null,
         el("button.btn.primary", { html: icon("folder") + "Abrir dossiê", onclick: () => navigate(`casos/${c.id}`) }),
     ]));
 
@@ -377,7 +381,7 @@ function buildLinkedArchive(linkedPeople, linkedEvidence, manageLinks) {
                 ]))),
             ]),
         ]),
-        el("button.btn.board-manage-cta", { html: icon("plus") + "Adicionar ou editar vínculos", onclick: manageLinks }),
+        manageLinks ? el("button.btn.board-manage-cta", { html: icon("plus") + "Adicionar ou editar vínculos", onclick: manageLinks }) : el("span.tag.board-manage-cta", { html: icon("lock") + "Consulta sem edição" }),
     ]);
 }
 

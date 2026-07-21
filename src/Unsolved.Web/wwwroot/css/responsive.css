@@ -18,8 +18,9 @@
     .steps-timeline::before { display: none; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 28px; }
     .footer-grid { grid-template-columns: 1fr 1fr; }
-    .auth-wrap { grid-template-columns: 1fr; }
+    .auth-wrap, .access-entry-grid { grid-template-columns: 1fr; }
     .auth-aside { display: none; }
+    .access-form-panel { position: static; margin-top: 0; }
     .demo-body { grid-template-columns: 1fr; }
     .demo-caselist { border-right: 0; border-bottom: 1px solid var(--line); }
 }
@@ -61,6 +62,15 @@
     .stamp-hero { right: 2%; font-size: .9rem; }
     .cursor-lens { display: none; } /* sem cursor customizado em telas de toque */
     .demo-detail-grid { grid-template-columns: 1fr; }
+    .preview-workspace { grid-template-columns: 1fr; }
+    .preview-case-list { border-right: 0; border-bottom: 1px solid var(--line); }
+    .demo-entry-cta { grid-template-columns: 1fr; }
+    .demo-entry-cta .btn { width: 100%; }
+    .access-back { margin-bottom: 30px; }
+    .access-intro h1 { font-size: clamp(2.4rem, 14vw, 3.7rem); }
+    .access-profile-card { grid-template-columns: 42px minmax(0, 1fr); }
+    .profile-action { grid-column: 2; }
+    .access-form-panel { padding: 24px 20px; }
 
     /* ---- Caça aos segredos: HUD e painel sem ficar achatado ---- */
     .quest-hud { left: 12px; bottom: 14px; padding: 11px 16px; font-size: .92rem; }

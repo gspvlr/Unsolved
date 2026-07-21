@@ -5,6 +5,7 @@ import { navigate } from "../router.js";
 import { pageHead } from "../widgets.js";
 import { skeleton, emptyState } from "../ui.js";
 import { getFilter, setFilter } from "../store.js";
+import { visibleCases, visibleEvents } from "../auth.js";
 
 const KIND_ICON = { case: "folder", stage: "arrowR", evidence: "box", note: "chat", person: "user" };
 const KIND_LABEL = { case: "Caso", stage: "Movimentação", evidence: "Evidência", note: "Anotação", person: "Pessoa" };
@@ -19,7 +20,9 @@ export default async function renderTimeline(container) {
     container.appendChild(body);
     body.appendChild(skeleton("lines", 8));
 
-    const [events, cases] = await Promise.all([all("events"), all("cases")]);
+    const [rawEvents, rawCases] = await Promise.all([all("events"), all("cases")]);
+    const cases = visibleCases(rawCases);
+    const events = visibleEvents(rawEvents);
     // enriquece com movimentações de casos
     cases.forEach(c => (c.activity || []).forEach(a => events.push({ id: a.id, at: a.at, kind: a.kind === "open" ? "case" : a.kind, caseId: c.id, title: `${c.code}: ${a.text}`, text: a.text })));
     clear(body);

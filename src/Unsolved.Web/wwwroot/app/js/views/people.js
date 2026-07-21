@@ -8,11 +8,12 @@ import { skeleton, emptyState, toast, modal, confirmDialog, attachContextMenu } 
 import { getFilter, setFilter } from "../store.js";
 import { evidencePhoto, personPortrait, portraitStyle } from "../media.js";
 import { prepareImage } from "../uploads.js";
+import { canCreatePerson, canEditPerson, currentUser, isAdmin, isDetective, visibleCases, visibleEvidence, visiblePeople } from "../auth.js";
 
 export async function renderPeople(container) {
     clear(container);
     container.appendChild(pageHead("Pessoas", "Cadastro único reutilizado em vítimas, suspeitos e testemunhas", [
-        el("button.btn.primary", { html: icon("plus") + "Cadastrar pessoa", onclick: () => openPersonModal() }),
+        canCreatePerson() ? el("button.btn.primary", { html: icon("plus") + "Cadastrar pessoa", onclick: () => openPersonModal() }) : null,
     ]));
     const f = getFilter("people", { q: "" });
     const body = el("div");
@@ -22,8 +23,9 @@ export async function renderPeople(container) {
     container.appendChild(body);
     body.appendChild(skeleton("cards", 8));
 
-    let people, cases;
-    [people, cases] = await Promise.all([all("people"), all("cases")]);
+    let people, cases, rawPeople, rawCases;
+    [rawPeople, rawCases] = await Promise.all([all("people"), all("cases")]);
+    cases = visibleCases(rawCases); people = visiblePeople(rawPeople, rawCases);
     clear(body);
     const caseLinks = (pid) => cases.filter(c => (c.people || []).some(p => p.personId === pid));
 
@@ -31,7 +33,7 @@ export async function renderPeople(container) {
         clear(body);
         const list = people.filter(p => !f.q || `${p.name} ${p.profession} ${p.city} ${p.cpf}`.toLowerCase().includes(f.q.toLowerCase()))
             .sort((a, b) => a.name.localeCompare(b.name));
-        if (!list.length) { body.appendChild(emptyState({ icon: "users", title: "Nenhuma pessoa", action: { label: "Cadastrar", icon: "plus", onClick: () => openPersonModal() } })); return; }
+        if (!list.length) { body.appendChild(emptyState({ icon: "users", title: "Nenhuma pessoa", action: canCreatePerson() ? { label: "Cadastrar", icon: "plus", onClick: () => openPersonModal() } : null })); return; }
         const grid = el("div.entity-grid");
         list.forEach(p => {
             const linked = caseLinks(p.id);
@@ -51,19 +53,24 @@ export async function renderPeople(container) {
             ]);
             attachContextMenu(node, () => [
                 { label: "Abrir perfil", icon: "eye", action: () => navigate("pessoas/" + p.id) },
-                { label: "Editar", icon: "edit", action: () => openPersonModal(p) },
-                "-", { label: "Excluir", icon: "trash", danger: true, action: () => removePerson(p) },
-            ]);
+                canEditPerson(p, rawCases) ? { label: "Editar", icon: "edit", action: () => openPersonModal(p) } : null,
+                isAdmin() ? "-" : null, isAdmin() ? { label: "Excluir", icon: "trash", danger: true, action: () => removePerson(p) } : null,
+            ].filter(Boolean));
             grid.appendChild(node);
         });
         body.appendChild(grid);
     }
     paint();
-    window.__pplRepaint = () => all("people").then(x => { people = x; paint(); });
+    window.__pplRepaint = () => Promise.all([all("people"), all("cases")]).then(([nextPeople, nextCases]) => { rawPeople = nextPeople; rawCases = nextCases; cases = visibleCases(rawCases); people = visiblePeople(rawPeople, rawCases); paint(); });
 }
 
 export async function openPersonModal(existing, options = {}) {
-    const cases = await all("cases");
+    const rawCases = await all("cases");
+    if ((existing && !canEditPerson(existing, rawCases)) || (!existing && !canCreatePerson(options.caseId))) {
+        toast("Seu perfil não permite alterar esta pessoa", { type: "warning", title: "Somente leitura" });
+        return;
+    }
+    const cases = visibleCases(rawCases);
     const p = existing ? { ...existing } : { sex: "M", maritalStatus: "Solteiro(a)" };
     let photoDataUrl = p.photoDataUrl || "";
     let photoName = p.photoName || "";
@@ -103,9 +110,9 @@ export async function openPersonModal(existing, options = {}) {
         removePhoto.style.display = photoDataUrl ? "inline-flex" : "none";
         photoStatus.textContent = photos.length ? `${photos.length} ${photos.length === 1 ? "foto no arquivo" : "fotos no arquivo"} · clique para definir a principal` : "JPG ou PNG · até 10 MB por imagem";
     }
-    const selectedCaseId = options.caseId || "";
+    const selectedCaseId = options.caseId || (isDetective() ? currentUser().assignedCaseId : "");
     const linkFields = el("div.person-case-fields", {}, [
-        field("Vincular ao caso", F.caseId = el("select.input", {}, [el("option", { value: "", text: "— salvar sem vínculo —" }), ...cases.map(c => el("option", { value: c.id, text: `${c.code} · ${c.title}`, selected: c.id === selectedCaseId }))])),
+        field("Vincular ao caso", F.caseId = el("select.input", { disabled: isDetective() }, [el("option", { value: "", text: "— salvar sem vínculo —" }), ...cases.map(c => el("option", { value: c.id, text: `${c.code} · ${c.title}`, selected: c.id === selectedCaseId }))])),
         field("Papel no caso", F.caseRole = el("select.input", {}, PERSON_ROLES.map(role => el("option", { value: role, text: role, selected: role === (options.role || "Testemunha") })))),
         el("p.link-auto-note", { html: icon("share") + "Ao selecionar um caso, esta pessoa aparecerá automaticamente no mural." }),
     ]);
@@ -154,6 +161,7 @@ export async function openPersonModal(existing, options = {}) {
 function sel(obj, k, opts) { return el("select.input", {}, opts.map(o => el("option", { value: o, text: o, selected: obj[k] === o }))); }
 
 async function removePerson(p) {
+    if (!isAdmin()) return toast("Somente o administrador pode excluir pessoas", { type: "warning", title: "Ação bloqueada" });
     if (!(await confirmDialog({ title: "Excluir pessoa", message: `"${p.name}" será removida do cadastro.`, confirmText: "Excluir" }))) return;
     await del("people", p.id); toast("Pessoa excluída", { type: "success" }); window.__pplRepaint?.();
     if (location.hash.startsWith("#/pessoas/")) navigate("pessoas");
@@ -162,8 +170,10 @@ async function removePerson(p) {
 /* ============================ DETALHE ============================ */
 export async function renderPersonDetail(container, params) {
     clear(container);
-    const [p, people, cases, evidence] = await Promise.all([get("people", params.id), all("people"), all("cases"), all("evidence")]);
+    const [p, rawPeople, rawCases, rawEvidence] = await Promise.all([get("people", params.id), all("people"), all("cases"), all("evidence")]);
     if (!p) { container.appendChild(emptyState({ icon: "users", title: "Pessoa não encontrada", action: { label: "Voltar", onClick: () => navigate("pessoas") } })); return; }
+    const people = visiblePeople(rawPeople, rawCases), cases = visibleCases(rawCases), evidence = visibleEvidence(rawEvidence);
+    if (!people.some(item => item.id === p.id)) { container.appendChild(emptyState({ icon: "lock", title: "Pessoa fora da sua investigação", text: "Este registro não está vinculado ao caso atribuído ao seu perfil.", action: { label: "Voltar", onClick: () => navigate("pessoas") } })); return; }
     const relatedCases = cases.filter(c => (c.people || []).some(x => x.personId === p.id));
     const relatedEv = evidence.filter(e => (e.personIds || []).includes(p.id));
     const photoArchive = (p.photos || (p.photoDataUrl ? [{ id: "main", dataUrl: p.photoDataUrl, name: p.photoName || "Foto principal" }] : []));
@@ -172,7 +182,7 @@ export async function renderPersonDetail(container, params) {
 
     container.appendChild(el("div.page-head", {}, [
         el("div", {}, [el("a.crumbs", { href: "#/pessoas", style: { cursor: "pointer" }, html: `<span>${icon("chevronL")}</span><span>Pessoas</span>` })]),
-        el("div.actions", {}, [el("button.btn", { html: icon("edit") + "Editar", onclick: () => openPersonModal(p) }), el("button.btn.danger", { html: icon("trash"), onclick: () => removePerson(p) })]),
+        el("div.actions", {}, [canEditPerson(p, rawCases) ? el("button.btn", { html: icon("edit") + "Editar", onclick: () => openPersonModal(p) }) : null, isAdmin() ? el("button.btn.danger", { html: icon("trash"), onclick: () => removePerson(p) }) : null]),
     ]));
 
     // Hero
@@ -222,7 +232,7 @@ export async function renderPersonDetail(container, params) {
                 el("div", {}, photoArchive.map(photo => el("figure", {}, [el("img", { src: photo.dataUrl, alt: photo.name || `Foto de ${p.name}` }), el("figcaption", { text: photo.name || "Imagem arquivada" })]))),
             ]) : null,
         ]));
-        else if (active === "Relacionamentos") tabBody.appendChild(relTab(p, people, personName));
+        else if (active === "Relacionamentos") tabBody.appendChild(relTab(p, people, personName, canEditPerson(p, rawCases)));
         else if (active === "Casos") tabBody.appendChild(relatedCases.length ? el("div.entity-grid", {}, relatedCases.map(c => el("div.card.person-case-link", {}, [
             el("div", {}, [el("b.mono", { text: c.code }), el("span.tag", { text: (c.people.find(x => x.personId === p.id) || {}).role || "Envolvido" })]),
             el("h3", { text: c.title }),
@@ -243,7 +253,7 @@ export async function renderPersonDetail(container, params) {
 }
 function di(k, v) { return el("div.di", {}, [el("dt", { text: k }), el("dd", { text: v || "—" })]); }
 
-function relTab(p, people, personName) {
+function relTab(p, people, personName, writable) {
     const wrap = el("div");
     const list = el("div.grid", { style: { gap: "10px", marginBottom: "16px" } });
     function paint() {
@@ -251,7 +261,7 @@ function relTab(p, people, personName) {
         (p.relations || []).forEach((r, i) => list.appendChild(el("div.card.pad-sm", { style: { display: "flex", alignItems: "center", gap: "12px" } }, [
             personPortrait(people.find(x => x.id === r.personId), "mini-person-photo"), el("div", { style: { flex: 1 } }, [el("b", { text: personName(r.personId) }), el("div.muted", { style: { fontSize: ".78rem" }, text: r.type })]),
             el("button.btn.sm.ghost", { text: "Abrir", onclick: () => navigate("pessoas/" + r.personId) }),
-            el("button.icon-btn", { style: { width: "34px", height: "34px" }, html: icon("trash"), onclick: async () => { p.relations.splice(i, 1); await put("people", p); paint(); toast("Vínculo removido", { type: "info" }); } }),
+            writable ? el("button.icon-btn", { style: { width: "34px", height: "34px" }, html: icon("trash"), onclick: async () => { p.relations.splice(i, 1); await put("people", p); paint(); toast("Vínculo removido", { type: "info" }); } }) : null,
         ])));
         if (!(p.relations || []).length) list.appendChild(emptyState({ icon: "link", title: "Nenhum vínculo" }));
     }
@@ -259,7 +269,7 @@ function relTab(p, people, personName) {
     const selP = el("select.input", {}, [el("option", { value: "", text: "Selecionar pessoa…" }), ...people.filter(x => x.id !== p.id).map(x => el("option", { value: x.id, text: x.name }))]);
     const selT = el("select.input", {}, ["Associado", "Familiar", "Contato", "Conhecido", "Cúmplice", "Suspeito de vínculo"].map(t => el("option", { value: t, text: t })));
     const addBtn = el("button.btn.primary", { html: icon("plus") + "Vincular", onclick: async () => { if (!selP.value) return; p.relations = p.relations || []; p.relations.push({ personId: selP.value, type: selT.value }); await put("people", p); paint(); toast("Vínculo criado", { type: "success" }); } });
-    wrap.append(list, el("div.card", {}, [el("div.card-head", {}, [el("h3", { text: "Adicionar vínculo" })]), el("div.form-row", {}, [el("div.field", {}, [el("label", { text: "Pessoa" }), selP]), el("div.field", {}, [el("label", { text: "Tipo" }), selT])]), addBtn]));
+    wrap.append(list, writable ? el("div.card", {}, [el("div.card-head", {}, [el("h3", { text: "Adicionar vínculo" })]), el("div.form-row", {}, [el("div.field", {}, [el("label", { text: "Pessoa" }), selP]), el("div.field", {}, [el("label", { text: "Tipo" }), selT])]), addBtn]) : el("div.read-only-note", { html: icon("lock") + "Relacionamentos disponíveis somente para consulta neste perfil." }));
     return wrap;
 }
 

@@ -9,6 +9,7 @@ import { getFilter, setFilter } from "../store.js";
 import { evidencePhoto, personPortrait, portraitStack } from "../media.js";
 import { openPersonModal } from "./people.js";
 import { openEvModal } from "./evidence.js";
+import { canCreateCase, canEditCase, canViewCase, isAdmin, visibleCases } from "../auth.js";
 
 let usersCache = [];
 const userName = (id) => usersCache.find(u => u.id === id)?.name || "—";
@@ -18,7 +19,7 @@ export async function renderCases(container) {
     clear(container);
     container.appendChild(pageHead("Casos", "Gerencie investigações de ponta a ponta", [
         el("button.btn", { html: icon("kanban") + "Kanban", onclick: () => navigate("kanban") }),
-        el("button.btn.primary", { html: icon("plus") + "Novo caso", onclick: () => openCaseModal() }),
+        canCreateCase() ? el("button.btn.primary", { html: icon("plus") + "Novo caso", onclick: () => openCaseModal() }) : null,
     ]));
 
     const f = getFilter("cases", { q: "", status: "all", prio: "all", view: "grid", sort: "recent" });
@@ -26,7 +27,8 @@ export async function renderCases(container) {
     container.appendChild(body);
     const skel = skeleton("cards", 6); body.appendChild(skel);
 
-    const [cases, ev, people] = await Promise.all([all("cases"), all("evidence"), all("people")]);
+    const [rawCases, ev, people] = await Promise.all([all("cases"), all("evidence"), all("people")]);
+    const cases = visibleCases(rawCases);
     usersCache = await all("users");
     skel.remove();
 
@@ -43,7 +45,7 @@ export async function renderCases(container) {
             : f.sort === "prio" ? PRIORITIES.indexOf(b.priority) - PRIORITIES.indexOf(a.priority)
             : a.title.localeCompare(b.title));
 
-        if (!list.length) { body.appendChild(emptyState({ icon: "folder", title: "Nenhum caso encontrado", text: "Ajuste os filtros ou crie um novo caso.", action: { label: "Novo caso", icon: "plus", onClick: () => openCaseModal() } })); return; }
+        if (!list.length) { body.appendChild(emptyState({ icon: "folder", title: "Nenhum caso encontrado", text: "Ajuste os filtros aplicados.", action: canCreateCase() ? { label: "Novo caso", icon: "plus", onClick: () => openCaseModal() } : null })); return; }
 
         const count = (id) => {
             const current = cases.find(c => c.id === id);
@@ -63,7 +65,7 @@ export async function renderCases(container) {
     paint();
 
     // reabre modal se veio de "?new=1"
-    if (location.hash.includes("new=1")) { history.replaceState(null, "", "#/casos"); openCaseModal(); }
+    if (location.hash.includes("new=1")) { history.replaceState(null, "", "#/casos"); if (canCreateCase()) openCaseModal(); }
 }
 
 function buildToolbar(f, onChange) {
@@ -129,11 +131,11 @@ function caseTable(list, count) {
 export function caseMenu(c) {
     return [
         { label: "Abrir", icon: "eye", action: () => navigate("casos/" + c.id) },
-        { label: "Editar", icon: "edit", action: () => openCaseModal(c) },
-        { label: "Avançar estágio", icon: "arrowR", action: () => advanceStage(c) },
-        "-",
-        { label: "Excluir", icon: "trash", danger: true, action: () => deleteCase(c) },
-    ];
+        canEditCase(c) ? { label: "Editar", icon: "edit", action: () => openCaseModal(c) } : null,
+        canEditCase(c) ? { label: "Avançar estágio", icon: "arrowR", action: () => advanceStage(c) } : null,
+        isAdmin() ? "-" : null,
+        isAdmin() ? { label: "Excluir", icon: "trash", danger: true, action: () => deleteCase(c) } : null,
+    ].filter(Boolean);
 }
 
 async function advanceStage(c) {
@@ -144,7 +146,7 @@ async function advanceStage(c) {
 }
 export async function moveStage(id, next, silentToast) {
     const c = await get("cases", id);
-    if (!c || c.status === next) return;
+    if (!c || c.status === next || !canEditCase(c)) return;
     c.activity = c.activity || [];
     c.activity.push({ id: uid("ev"), kind: "stage", at: new Date().toISOString(), by: c.leadId, text: `${c.status} → ${next}` });
     const prev = c.status; c.status = next;
@@ -153,6 +155,7 @@ export async function moveStage(id, next, silentToast) {
 }
 
 async function deleteCase(c) {
+    if (!isAdmin()) return toast("Somente o administrador pode excluir casos", { type: "warning", title: "Ação bloqueada" });
     if (!(await confirmDialog({ title: "Excluir caso", message: `O caso "${c.title}" e suas movimentações serão removidos. Esta ação não pode ser desfeita.`, confirmText: "Excluir" }))) return;
     await del("cases", c.id);
     toast("Caso excluído", { type: "success" });
@@ -162,6 +165,10 @@ function renderCasesRefresh() { const v = document.querySelector(".view-inner");
 
 /* ============================ CREATE / EDIT ============================ */
 export async function openCaseModal(existing) {
+    if ((existing && !canEditCase(existing)) || (!existing && !canCreateCase())) {
+        toast("Seu perfil não permite alterar este caso", { type: "warning", title: "Somente leitura" });
+        return;
+    }
     if (!usersCache.length) usersCache = await all("users");
     const c = existing ? { ...existing } : { status: "Registro", priority: "Média", type: "Homicídio", tags: [] };
     const F = {};
@@ -180,7 +187,7 @@ export async function openCaseModal(existing) {
         ]),
         el("div.form-row", {}, [
             field("Cidade/UF", F.city = el("select.input", {}, cities.map(cc => { const [city, uf] = cc.split("|"); return el("option", { value: cc, text: `${city}/${uf}`, selected: c.city === city }); }))),
-            field("Responsável", F.leadId = el("select.input", {}, [el("option", { value: "", text: "— não atribuído —" }), ...usersCache.map(u => el("option", { value: u.id, text: u.name, selected: c.leadId === u.id }))])),
+            field("Responsável", F.leadId = el("select.input", { disabled: !isAdmin() }, [el("option", { value: "", text: "— não atribuído —" }), ...usersCache.map(u => el("option", { value: u.id, text: u.name, selected: c.leadId === u.id }))])),
         ]),
         field("Descrição", F.description = el("textarea.input", { text: c.description || "", placeholder: "Resumo dos fatos conhecidos…" })),
         field("Tags (separadas por vírgula)", F.tags = el("input.input", { value: (c.tags || []).join(", ") })),
@@ -235,6 +242,7 @@ export async function renderCaseDetail(container, params) {
     const [c, users, allPeople, allEv, events] = await Promise.all([get("cases", params.id), all("users"), all("people"), all("evidence"), all("events")]);
     usersCache = users;
     if (!c) { container.appendChild(emptyState({ icon: "folder", title: "Caso não encontrado", text: "Ele pode ter sido removido.", action: { label: "Voltar aos casos", onClick: () => navigate("casos") } })); return; }
+    if (!canViewCase(c)) { container.appendChild(emptyState({ icon: "lock", title: "Caso fora da sua atribuição", text: "O perfil de detetive acessa somente o caso em que está atuando.", action: { label: "Abrir meu caso", onClick: () => navigate("casos") } })); return; }
     const evOfCase = allEv.filter(e => e.caseId === c.id);
     const peopleOfCase = (c.people || []).map(pr => ({ ...pr, person: allPeople.find(p => p.id === pr.personId) })).filter(x => x.person);
 
@@ -246,9 +254,9 @@ export async function renderCaseDetail(container, params) {
             el("div.sub", { html: `<span class="mono" style="color:var(--accent)">${c.code}</span> · ${c.type} · ${c.city}/${c.state}` }),
         ]),
         el("div.actions", {}, [
-            el("button.btn", { html: icon("link") + "Gerenciar vínculos", onclick: () => openCaseLinks(c, allPeople, allEv, { onChanged: () => renderCaseDetail(container, params) }) }),
+            canEditCase(c) ? el("button.btn", { html: icon("link") + "Gerenciar vínculos", onclick: () => openCaseLinks(c, isAdmin() ? allPeople : peopleOfCase.map(link => link.person), isAdmin() ? allEv : evOfCase, { onChanged: () => renderCaseDetail(container, params) }) }) : null,
             el("button.btn.primary", { html: icon("share") + "Abrir mural", onclick: () => navigate("mural?case=" + c.id) }),
-            el("button.btn", { html: icon("edit") + "Editar", onclick: () => openCaseModal(c) }),
+            canEditCase(c) ? el("button.btn", { html: icon("edit") + "Editar", onclick: () => openCaseModal(c) }) : null,
             el("button.btn.ghost.icon-only", { html: icon("dots"), onclick: (e) => contextMenu(e.clientX, e.clientY, caseMenu(c)) }),
         ]),
     ]));
@@ -281,7 +289,7 @@ export async function renderCaseDetail(container, params) {
         else if (activeTab === "Evidências") tabBody.appendChild(tabEvidence(c, evOfCase));
         else if (activeTab === "Linha do tempo") tabBody.appendChild(tabTimeline(c));
         else if (activeTab === "Documentos") tabBody.appendChild(tabDocs(c, evOfCase));
-        else if (activeTab === "Anotações") tabBody.appendChild(tabNotes(c));
+        else if (activeTab === "Anotações") tabBody.appendChild(tabNotes(c, canEditCase(c)));
         else if (activeTab === "Histórico") tabBody.appendChild(tabHistory(c));
         else if (activeTab === "Permissões") tabBody.appendChild(tabPerms(c));
         else if (activeTab === "Auditoria") tabBody.appendChild(tabAudit(c));
@@ -290,6 +298,10 @@ export async function renderCaseDetail(container, params) {
 }
 
 export function openCaseLinks(caseInput, peopleInput, evidenceInput, { onChanged } = {}) {
+    if (!canEditCase(caseInput)) {
+        toast("Seu perfil pode visualizar este mural, mas não alterar seus vínculos", { type: "warning", title: "Somente leitura" });
+        return;
+    }
     let caseRecord = caseInput;
     let people = peopleInput;
     let evidence = evidenceInput;
@@ -374,7 +386,8 @@ function pipelineBar(c) {
         const bg = state === "current" ? stageVar(s) : state === "done" ? "color-mix(in srgb, " + stageVar(s) + " 55%, transparent)" : "var(--surface-2)";
         const col = state === "future" ? "var(--ink-3)" : "#08122b";
         row.appendChild(el("button", {
-            style: { flex: "1 1 0", minWidth: "96px", border: "0", cursor: state === "current" ? "default" : "pointer", padding: "11px 10px", fontSize: ".8rem", fontWeight: "700", color: col, background: bg,
+            disabled: !canEditCase(c),
+            style: { flex: "1 1 0", minWidth: "96px", border: "0", cursor: !canEditCase(c) || state === "current" ? "default" : "pointer", padding: "11px 10px", fontSize: ".8rem", fontWeight: "700", color: col, background: bg,
                 clipPath: i === 0 ? "polygon(0 0,calc(100% - 13px) 0,100% 50%,calc(100% - 13px) 100%,0 100%)" : i === STAGES.length - 1 ? "polygon(0 0,100% 0,100% 100%,0 100%,13px 50%)" : "polygon(0 0,calc(100% - 13px) 0,100% 50%,calc(100% - 13px) 100%,0 100%,13px 50%)" },
             text: s, onclick: async () => { if (s !== c.status) { await moveStage(c.id, s); navigate("casos/" + c.id); } },
         }));
@@ -455,7 +468,7 @@ function tabDocs(c, ev) {
     if (!docs.length) return emptyState({ icon: "doc", title: "Sem documentos", text: "Documentos vinculados aparecerão aqui." });
     return el("div.card", { style: { padding: "6px" } }, [el("table.tbl", {}, [el("thead", {}, [el("tr", {}, ["Código", "Título", "Origem", "Data"].map(h => el("th", { text: h })))]), el("tbody", {}, docs.map(d => el("tr", {}, [el("td", { html: `<b class='mono'>${d.code}</b>` }), el("td", { text: d.title }), el("td", { text: d.origin }), el("td", { text: fmtDate(d.date) })])))])]);
 }
-function tabNotes(c) {
+function tabNotes(c, writable) {
     const wrap = el("div");
     const list = el("div.grid", { style: { gap: "10px", marginTop: "14px" } });
     const ta = el("textarea.input", { placeholder: "Escreva uma anotação… (salva automaticamente)", style: { minHeight: "70px" } });
@@ -465,7 +478,9 @@ function tabNotes(c) {
         c.activity = c.activity || []; c.activity.push({ id: uid("ev"), kind: "note", at: new Date().toISOString(), by: c.leadId, text: "Anotação adicionada" });
         await put("cases", c); ta.value = ""; paintNotes(); toast("Anotação salva", { type: "success" });
     } });
-    wrap.append(el("div.card", {}, [ta, el("div", { style: { marginTop: "10px" } }, [add])]), list);
+    if (writable) wrap.append(el("div.card", {}, [ta, el("div", { style: { marginTop: "10px" } }, [add])]));
+    else wrap.append(el("div.read-only-note", { html: icon("lock") + "Este perfil pode consultar as anotações, mas não adicionar novas entradas." }));
+    wrap.append(list);
     function paintNotes() {
         clear(list);
         (c.notes || []).forEach(n => list.appendChild(el("div.card.pad-sm", {}, [
@@ -479,7 +494,7 @@ function tabNotes(c) {
 }
 function tabHistory(c) { return tabTimeline(c); }
 function tabPerms(c) {
-    const rows = [["Administrador", "Total"], ["Supervisor", "Editar e mover"], ["Investigador", "Editar atribuídos"], ["Analista", "Leitura"]];
+    const rows = [["Administrador geral", "Acesso total"], ["Detetive", "Editar somente o caso atribuído"], ["Usuário comum", "Somente visualização"]];
     return el("div.card", {}, [el("div.card-head", {}, [el("h3", { text: "Permissões por perfil" })]), el("dl.def-list", {}, rows.map(([r, p]) => di(r, el("span.tag", { text: p }))))]);
 }
 function tabAudit(c) {

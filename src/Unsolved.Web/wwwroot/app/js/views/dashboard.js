@@ -6,15 +6,20 @@ import { STAGES, TERMINAL, stageBadge, stageVar, prioBadge, isTerminal } from ".
 import { pageHead, kpiCard, sparkline, avatarChip, bars, donut } from "../widgets.js";
 import { skeleton, toast } from "../ui.js";
 import { evidencePhoto, personPortrait } from "../media.js";
+import { canCreateCase, canManageUsers, visibleCases, visibleEvidence, visibleEvents, visiblePeople } from "../auth.js";
 
 export default async function renderDashboard(container) {
     container.appendChild(pageHead("Central de investigação", "Casos, evidências e movimentações que exigem atenção", [
-        el("button.btn.primary", { html: icon("plus") + "Novo caso", onclick: () => location.hash = "#/casos?new=1" }),
+        canCreateCase() ? el("button.btn.primary", { html: icon("plus") + "Novo caso", onclick: () => location.hash = "#/casos?new=1" }) : null,
     ]));
     const skel = skeleton("kpis", 6); container.appendChild(skel);
 
-    const [cases, evidence, people, events, users] = await Promise.all(
+    const [rawCases, rawEvidence, rawPeople, rawEvents, users] = await Promise.all(
         ["cases", "evidence", "people", "events", "users"].map(all));
+    const cases = visibleCases(rawCases);
+    const evidence = visibleEvidence(rawEvidence);
+    const people = visiblePeople(rawPeople, rawCases);
+    const events = visibleEvents(rawEvents);
     skel.remove();
 
     const open = cases.filter(c => !isTerminal(c.status));
@@ -48,9 +53,9 @@ export default async function renderDashboard(container) {
         { icon: "check", label: "Resolvidos", value: solved.length, accent: "var(--success)", foot: [el("span.muted", { text: "taxa " + Math.round(solved.length / Math.max(cases.length, 1) * 100) + "%" })], route: "casos" },
         { icon: "box", label: "Evidências", value: evidence.length, accent: "var(--accent-2)", foot: [el("span.muted", { text: "sob custódia" })], route: "evidencias" },
         { icon: "users", label: "Pessoas vinculadas", value: people.length, accent: "var(--accent-3)", foot: [el("span.muted", { text: "registros ativos" })], route: "pessoas" },
-        { icon: "shield", label: "Investigadores", value: users.length, foot: [el("span.muted", { text: "equipe autorizada" })], route: "usuarios" },
+        { icon: "shield", label: "Investigadores", value: users.length, foot: [el("span.muted", { text: "equipe autorizada" })], route: canManageUsers() ? "usuarios" : null },
     ];
-    for (const k of K) { const c = kpiCard(k); c.onclick = () => navigate(k.route); kpis.appendChild(c); }
+    for (const k of K) { const c = kpiCard(k); if (k.route) c.onclick = () => navigate(k.route); kpis.appendChild(c); }
     container.appendChild(kpis);
 
     // ---- Grid principal ----
@@ -82,13 +87,13 @@ export default async function renderDashboard(container) {
     // Ranking investigadores
     const rank = users.map(u => ({ u, resolved: cases.filter(c => c.leadId === u.id && c.status === "Resolvido").length, active: cases.filter(c => c.leadId === u.id && !isTerminal(c.status)).length }))
         .sort((a, b) => (b.resolved * 3 + b.u.productivity) - (a.resolved * 3 + a.u.productivity)).slice(0, 5);
-    const rankEl = el("div", {}, rank.map((r, i) => el("div.rank-row" + (i < 3 ? ".top" + (i + 1) : ""), { onclick: () => navigate("usuarios"), style: { cursor: "pointer" } }, [
+    const rankEl = el("div", {}, rank.map((r, i) => el("div.rank-row" + (i < 3 ? ".top" + (i + 1) : ""), { onclick: canManageUsers() ? () => navigate("usuarios") : null, style: { cursor: canManageUsers() ? "pointer" : "default" } }, [
         el("div.pos", { text: "#" + (i + 1) }),
         avatarChip(r.u.name, "sm"),
         el("div", { style: { minWidth: 0, flex: "1" } }, [el("b", { style: { fontSize: ".85rem", display: "block" }, text: r.u.name }), el("span.muted", { style: { fontSize: ".74rem" }, text: r.u.specialty })]),
         el("div", { style: { textAlign: "right", fontSize: ".8rem" } }, [el("b", { text: r.resolved + " ✓" }), el("div.muted", { style: { fontSize: ".72rem" }, text: r.active + " ativos" })]),
     ])));
-    dash.appendChild(card("col-4", "Ranking de investigadores", "trending", "usuarios", rankEl));
+    dash.appendChild(card("col-4", "Ranking de investigadores", "trending", canManageUsers() ? "usuarios" : null, rankEl));
 
     // Atividade recente (timeline) — col-6
     const feed = el("div");

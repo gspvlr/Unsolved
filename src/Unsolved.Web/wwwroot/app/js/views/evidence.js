@@ -8,6 +8,7 @@ import { skeleton, emptyState, toast, modal, confirmDialog, attachContextMenu } 
 import { getFilter, setFilter, isFav, toggleFav } from "../store.js";
 import { evidencePhoto, personPortrait } from "../media.js";
 import { prepareImage } from "../uploads.js";
+import { canCreateEvidence, canEditEvidence, currentUser, isAdmin, isDetective, visibleCases, visibleEvidence, visiblePeople } from "../auth.js";
 
 let cases = [], users = [], people = [];
 const caseCode = (id) => cases.find(c => c.id === id)?.code || "—";
@@ -16,18 +17,19 @@ const caseTitle = (id) => cases.find(c => c.id === id)?.title || "";
 export default async function renderEvidence(container) {
     clear(container);
     container.appendChild(pageHead("Evidências", "Cadeia de custódia, categorização e integridade", [
-        el("button.btn.primary", { html: icon("plus") + "Nova evidência", onclick: () => openEvModal() }),
+        canCreateEvidence() ? el("button.btn.primary", { html: icon("plus") + "Nova evidência", onclick: () => openEvModal() }) : null,
     ]));
 
     const f = getFilter("evidence", { q: "", type: "all", custody: "all", favOnly: false });
-    container.appendChild(evidenceIntake());
+    container.appendChild(evidenceIntake(canCreateEvidence()));
     const body = el("div");
     container.appendChild(toolbar(f, () => paint()));
     container.appendChild(body);
     body.appendChild(skeleton("cards", 8));
 
     let items;
-    [items, cases, users, people] = await Promise.all([all("evidence"), all("cases"), all("users"), all("people")]);
+    const [rawItems, rawCases, loadedUsers, rawPeople] = await Promise.all([all("evidence"), all("cases"), all("users"), all("people")]);
+    items = visibleEvidence(rawItems); cases = visibleCases(rawCases); users = loadedUsers; people = visiblePeople(rawPeople, rawCases);
     clear(body);
 
     function paint() {
@@ -39,7 +41,7 @@ export default async function renderEvidence(container) {
             if (f.q && !(`${e.code} ${e.title} ${e.type} ${caseCode(e.caseId)}`.toLowerCase().includes(f.q.toLowerCase()))) return false;
             return true;
         }).sort((a, b) => new Date(b.date) - new Date(a.date));
-        if (!list.length) { body.appendChild(emptyState({ icon: "box", title: "Nenhuma evidência", text: "Ajuste filtros ou cadastre uma nova.", action: { label: "Nova evidência", icon: "plus", onClick: () => openEvModal() } })); return; }
+        if (!list.length) { body.appendChild(emptyState({ icon: "box", title: "Nenhuma evidência", text: "Ajuste os filtros aplicados.", action: canCreateEvidence() ? { label: "Nova evidência", icon: "plus", onClick: () => openEvModal() } : null })); return; }
         const grid = el("div.entity-grid");
         list.forEach(e => grid.appendChild(evCard(e)));
         body.appendChild(grid);
@@ -48,7 +50,7 @@ export default async function renderEvidence(container) {
     const focusId = new URLSearchParams((location.hash.split("?")[1] || "")).get("focus");
     const focused = items.find(item => item.id === focusId);
     if (focused) setTimeout(() => openEvDetail(focused), 60);
-    window.__evRepaint = () => { all("evidence").then(x => { items = x; paint(); }); };
+    window.__evRepaint = () => { all("evidence").then(x => { items = visibleEvidence(x); paint(); }); };
 }
 
 function toolbar(f, onChange) {
@@ -82,10 +84,10 @@ function evCard(e) {
     ]);
     attachContextMenu(node, () => [
         { label: "Ver detalhes", icon: "eye", action: () => openEvDetail(e) },
-        { label: "Editar", icon: "edit", action: () => openEvModal(e) },
+        canEditEvidence(e) ? { label: "Editar", icon: "edit", action: () => openEvModal(e) } : null,
         { label: isFav("evidence", e.id) ? "Remover favorito" : "Favoritar", icon: "star", action: () => { toggleFav("evidence", e.id); window.__evRepaint?.(); } },
-        "-", { label: "Excluir", icon: "trash", danger: true, action: () => removeEv(e) },
-    ]);
+        isAdmin() ? "-" : null, isAdmin() ? { label: "Excluir", icon: "trash", danger: true, action: () => removeEv(e) } : null,
+    ].filter(Boolean));
     return node;
 }
 
@@ -117,18 +119,26 @@ function openEvDetail(e) {
           ]),
         ]),
     ]);
-    const editBtn = el("button.btn", { html: icon("edit") + "Editar" });
+    const editBtn = canEditEvidence(e) ? el("button.btn", { html: icon("edit") + "Editar" }) : null;
     const m = modal({ title: "Evidência", body, wide: true, footer: [openCase, openBoard, editBtn] });
     openCase.addEventListener("click", () => { m.close(); if (e.caseId) navigate("casos/" + e.caseId); });
     openBoard.addEventListener("click", () => { m.close(); if (e.caseId) navigate("mural?case=" + e.caseId); });
-    editBtn.addEventListener("click", () => { m.close(); openEvModal(e); });
+    editBtn?.addEventListener("click", () => { m.close(); openEvModal(e); });
 }
 function iconNode(name) { return el("span", { html: icon(name) }); }
 function row(k, v) { return el("div.di", {}, [el("dt", { text: k }), el("dd", { text: v || "—" })]); }
 
 export async function openEvModal(existing, options = {}) {
-    if (!cases.length) [cases, users, people] = await Promise.all([all("cases"), all("users"), all("people")]);
-    const e = existing ? { ...existing } : { type: "Documento", custody: "Coletada", integrity: "Íntegra", caseId: options.caseId || "", personIds: options.personId ? [options.personId] : [] };
+    if ((existing && !canEditEvidence(existing)) || (!existing && !canCreateEvidence(options.caseId))) {
+        toast("Seu perfil não permite alterar esta evidência", { type: "warning", title: "Somente leitura" });
+        return;
+    }
+    if (!cases.length) {
+        const [rawCases, loadedUsers, rawPeople] = await Promise.all([all("cases"), all("users"), all("people")]);
+        cases = visibleCases(rawCases); users = loadedUsers; people = visiblePeople(rawPeople, rawCases);
+    }
+    const defaultCaseId = options.caseId || (isDetective() ? currentUser().assignedCaseId : "");
+    const e = existing ? { ...existing } : { type: "Documento", custody: "Coletada", integrity: "Íntegra", caseId: defaultCaseId, personIds: options.personId ? [options.personId] : [] };
     let mediaDataUrl = e.mediaDataUrl || "";
     let mediaName = e.mediaName || "";
     let mediaType = e.mediaType || "";
@@ -142,7 +152,7 @@ export async function openEvModal(existing, options = {}) {
         field("Título", inp("title", "Ex.: Registro de acesso")),
         el("div.form-row", {}, [field("Tipo", sel("type", EVIDENCE_TYPES)), field("Custódia", sel("custody", CUSTODY)), field("Integridade", sel("integrity", ["Íntegra", "Verificar"]))]),
         el("div.form-row", {}, [
-            field("Caso", F.caseId = el("select.input", {}, [el("option", { value: "", text: "—" }), ...cases.map(c => el("option", { value: c.id, text: c.code + " · " + c.title, selected: e.caseId === c.id }))])),
+            field("Caso", F.caseId = el("select.input", { disabled: isDetective() }, [el("option", { value: "", text: "—" }), ...cases.map(c => el("option", { value: c.id, text: c.code + " · " + c.title, selected: e.caseId === c.id }))])),
             field("Responsável", F.responsible = el("select.input", {}, [el("option", { value: "", text: "—" }), ...users.map(u => el("option", { value: u.id, text: u.name, selected: e.responsible === u.id }))])),
         ]),
         field("Pessoa diretamente relacionada", F.personId = el("select.input", {}, [el("option", { value: "", text: "— nenhuma —" }), ...people.map(p => el("option", { value: p.id, text: p.name, selected: (e.personIds || []).includes(p.id) }))])),
@@ -210,14 +220,15 @@ export async function openEvModal(existing, options = {}) {
     setTimeout(() => F.title.focus(), 50);
 }
 async function removeEv(e) {
+    if (!isAdmin()) return toast("Somente o administrador pode excluir evidências", { type: "warning", title: "Ação bloqueada" });
     if (!(await confirmDialog({ title: "Excluir evidência", message: `"${e.title}" será removida da cadeia de custódia.`, confirmText: "Excluir" }))) return;
     await del("evidence", e.id); toast("Evidência excluída", { type: "success" }); window.__evRepaint?.();
 }
 
-function evidenceIntake() {
+function evidenceIntake(writable) {
     return el("div.evidence-intake", {}, [
         el("span.evidence-intake-icon", { html: icon("upload") }),
-        el("div", {}, [el("b", { text: "Central de entrada pericial" }), el("small", { text: "Registre a mídia, atribua o caso e vincule as pessoas relacionadas no mesmo fluxo." })]),
-        el("button.btn", { html: icon("plus") + "Cadastrar arquivo", onclick: () => openEvModal() }),
+        el("div", {}, [el("b", { text: writable ? "Central de entrada pericial" : "Arquivo pericial em consulta" }), el("small", { text: writable ? "Registre a mídia, atribua o caso e vincule as pessoas relacionadas no mesmo fluxo." : "Seu perfil pode consultar a cadeia de custódia, sem alterar os registros." })]),
+        writable ? el("button.btn", { html: icon("plus") + "Cadastrar arquivo", onclick: () => openEvModal() }) : el("span.tag", { html: icon("lock") + "Somente leitura" }),
     ]);
 }

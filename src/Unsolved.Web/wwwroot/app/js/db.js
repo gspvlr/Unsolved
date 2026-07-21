@@ -7,6 +7,18 @@ const DB_VER = 1;
 export const STORES = ["cases", "people", "evidence", "events", "posts", "users"];
 
 let _db = null;
+let _writePolicy = () => true;
+
+export function setWritePolicy(policy) {
+    _writePolicy = typeof policy === "function" ? policy : () => true;
+}
+
+function assertWrite(store, value, operation) {
+    if (_writePolicy(store, value, operation)) return;
+    const error = new Error("Seu perfil não permite alterar este registro.");
+    error.name = "AccessDeniedError";
+    throw error;
+}
 
 export function openDB() {
     if (_db) return Promise.resolve(_db);
@@ -37,6 +49,7 @@ export async function count(store) { await openDB(); return wrap(tx(store, "read
 
 export async function put(store, obj, { silent = false } = {}) {
     await openDB();
+    assertWrite(store, obj, "put");
     obj.updatedAt = new Date().toISOString();
     if (!obj.createdAt) obj.createdAt = obj.updatedAt;
     await wrap(tx(store, "readwrite").put(obj));
@@ -46,6 +59,7 @@ export async function put(store, obj, { silent = false } = {}) {
 
 export async function bulkPut(store, arr) {
     await openDB();
+    assertWrite(store, arr, "bulkPut");
     const t = _db.transaction(store, "readwrite");
     const s = t.objectStore(store);
     const now = new Date().toISOString();
@@ -56,10 +70,11 @@ export async function bulkPut(store, arr) {
     });
 }
 
-export async function del(store, id) { await openDB(); await wrap(tx(store, "readwrite").delete(id)); emit(store); }
+export async function del(store, id) { await openDB(); assertWrite(store, { id }, "delete"); await wrap(tx(store, "readwrite").delete(id)); emit(store); }
 
 export async function clearAll() {
     await openDB();
+    assertWrite("*", null, "clearAll");
     await Promise.all(STORES.map(s => wrap(tx(s, "readwrite").clear())));
     STORES.forEach(emit);
 }
