@@ -52,8 +52,8 @@ export function confirmDialog({ title = "Confirmar ação", message, confirmText
             el("h3", { text: title }),
             el("p", { text: message }),
             el("div.row", {}, [
-                el("button.btn.ghost", { text: "Cancelar", onclick: () => { close(); resolve(false); } }),
-                el("button.btn" + (danger ? ".danger" : ".primary"), { text: confirmText, onclick: () => { close(); resolve(true); } }),
+                el("button.btn.ghost", { text: "Cancelar", onclick: () => { resolve(false); close(); } }),
+                el("button.btn" + (danger ? ".danger" : ".primary"), { text: confirmText, onclick: () => { resolve(true); close(); } }),
             ]),
         ]);
         const { close } = overlay(box, { onClose: () => resolve(false) });

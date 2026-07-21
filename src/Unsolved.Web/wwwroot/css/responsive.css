@@ -12,6 +12,7 @@
     .hero-actions { justify-content: center; }
 
     .solution-grid, .security-grid, .about-grid, .contact-grid, .demo-request-grid { grid-template-columns: 1fr; gap: 34px; }
+    .demo-preview { width: 100%; max-width: 780px; margin-inline: auto; }
     .cards-grid { grid-template-columns: repeat(2, 1fr); }
     .features-grid > .card { flex-basis: calc(50% - 11px); }   /* 2 por linha no tablet */
     .steps-timeline { grid-template-columns: repeat(2, 1fr); }
@@ -60,10 +61,19 @@
     .contact-form-wrap, .modal-box { padding: 22px; }
     .footer-bottom { flex-direction: column; text-align: center; }
     .stamp-hero { right: 2%; font-size: .9rem; }
+    .hero-board .doc-2,
+    .hero-board .pin-3,
+    .case-link-evidence { display: none; }
     .cursor-lens { display: none; } /* sem cursor customizado em telas de toque */
     .demo-detail-grid { grid-template-columns: 1fr; }
     .preview-workspace { grid-template-columns: 1fr; }
     .preview-case-list { border-right: 0; border-bottom: 1px solid var(--line); }
+    .preview-toolbar { align-items: flex-start; padding: 22px 20px 17px; }
+    .preview-toolbar > span { max-width: 180px; }
+    .preview-kpis { margin-inline: 20px; }
+    .preview-kpis > div { padding-inline: 13px; }
+    .preview-case-list { padding: 14px 12px; }
+    .preview-editor { padding: 22px 20px 24px; }
     .demo-entry-cta { grid-template-columns: 1fr; }
     .demo-entry-cta .btn { width: 100%; }
     .access-back { margin-bottom: 30px; }
@@ -93,6 +103,22 @@
     .secret-list { gap: 14px; }
     .secret-list li { padding-left: 30px; line-height: 1.5; }
     .secret-actions { flex-direction: column; align-items: stretch; }
+}
+
+@media (max-width: 430px) {
+    .preview-titlebar { min-height: 50px; padding-inline: 14px; gap: 11px; }
+    .preview-title { display: none; }
+    .preview-live { font-size: .56rem; }
+    .preview-toolbar { display: grid; gap: 10px; }
+    .preview-toolbar > span { max-width: none; text-align: left; }
+    .preview-kpis { margin-inline: 14px; }
+    .preview-kpis > div { padding: 12px 9px 13px; }
+    .preview-kpis span { font-size: .58rem; }
+    .preview-kpis strong { font-size: 1.45rem; }
+    .preview-workspace { min-height: 0; }
+    .preview-case { grid-template-columns: 4px minmax(0, 1fr); }
+    .preview-case em { grid-column: 2; justify-self: start; }
+    .preview-editor-head b { white-space: normal; }
 }
 
 /* Telas de toque: desativa a lupa que segue o mouse */

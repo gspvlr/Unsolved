@@ -20,12 +20,17 @@
 
     function renderSelection(card) {
         active = card;
-        cases.forEach(item => item.classList.toggle("is-active", item === card));
+        cases.forEach(item => {
+            const isActive = item === card;
+            item.classList.toggle("is-active", isActive);
+            item.setAttribute("aria-pressed", String(isActive));
+        });
         code.textContent = card.dataset.code;
         title.textContent = card.dataset.title;
         status.value = card.dataset.status;
         range.value = card.dataset.progress;
         progress.textContent = card.dataset.progress + "%";
+        range.style.setProperty("--preview-progress", card.dataset.progress + "%");
     }
 
     cases.forEach(card => card.addEventListener("click", () => renderSelection(card)));
@@ -37,6 +42,7 @@
     range.addEventListener("input", () => {
         active.dataset.progress = range.value;
         progress.textContent = range.value + "%";
+        range.style.setProperty("--preview-progress", range.value + "%");
         active.classList.add("was-edited");
         recalculateAverage();
     });

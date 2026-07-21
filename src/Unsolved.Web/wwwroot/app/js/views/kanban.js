@@ -16,7 +16,7 @@ const userName = (id) => users.find(u => u.id === id)?.name || "";
 export default async function renderKanban(container) {
     clear(container);
     container.appendChild(pageHead("Kanban", isViewer() ? "Acompanhe a distribuição dos casos em modo somente leitura" : "Arraste os casos autorizados entre estágios — tudo salvo automaticamente", [
-        canCreateCase() ? el("button.btn.primary", { html: icon("plus") + "Novo caso", onclick: () => openCaseModal() }) : null,
+        canCreateCase() ? el("button.btn.primary", { html: icon("plus") + "Novo caso", onclick: () => openCaseModal(null, { onSaved: reload, navigateAfterSave: false }) }) : null,
     ]));
 
     const f = getFilter("kanban", { q: "", prio: "all", lead: "all" });
@@ -64,7 +64,7 @@ export default async function renderKanban(container) {
             items.forEach(c => bodyEl.appendChild(kcard(c)));
             bodyEl.appendChild(el("div.kcol-drophint", { text: "Solte aqui", style: { display: "none" } }));
             col.appendChild(bodyEl);
-            if (canCreateCase()) col.appendChild(el("div.kcol-add", {}, [el("button.btn.sm.ghost", { style: { width: "100%" }, html: icon("plus") + "Adicionar", onclick: () => openCaseModal({ status: stage, priority: "Média", type: "Homicídio" }) })]));
+            if (canCreateCase()) col.appendChild(el("div.kcol-add", {}, [el("button.btn.sm.ghost", { style: { width: "100%" }, html: icon("plus") + "Adicionar", onclick: () => openCaseModal(null, { defaults: { status: stage, priority: "Média", type: "Homicídio" }, onSaved: reload, navigateAfterSave: false }) })]));
             if (!isViewer()) enableDrop(bodyEl, stage);
             target.appendChild(col);
         }
@@ -113,7 +113,7 @@ export default async function renderKanban(container) {
             card.addEventListener("dragstart", (e) => { card.classList.add("dragging"); e.dataTransfer.setData("text/plain", c.id); e.dataTransfer.effectAllowed = "move"; });
             card.addEventListener("dragend", () => card.classList.remove("dragging"));
         }
-        attachContextMenu(card, () => caseMenu(c));
+        attachContextMenu(card, () => caseMenu(c, { onChanged: reload }));
         return card;
     }
 

@@ -24,10 +24,6 @@
     100% { opacity: 0; transform: translate(-50%, -50%) rotate(-16deg) scale(1.05); }
 }
 
-/* Pulso suave do ponto do "eyebrow" */
-@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 4px rgba(240, 216, 109, .18); } 50% { box-shadow: 0 0 0 7px rgba(240, 216, 109, .05); } }
-.eyebrow .dot { animation: pulse 2.4s ease-in-out infinite; }
-
 /* Barras do mini-gráfico "crescendo" */
 @keyframes growUp { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 .mini-chart span { transform-origin: bottom; animation: growUp 1s ease forwards; }

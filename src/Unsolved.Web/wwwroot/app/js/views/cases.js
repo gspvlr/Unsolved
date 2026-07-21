@@ -128,13 +128,13 @@ function caseTable(list, count) {
     return el("div.card", { style: { padding: "6px" } }, [table]);
 }
 
-export function caseMenu(c) {
+export function caseMenu(c, { onChanged } = {}) {
     return [
         { label: "Abrir", icon: "eye", action: () => navigate("casos/" + c.id) },
-        canEditCase(c) ? { label: "Editar", icon: "edit", action: () => openCaseModal(c) } : null,
-        canEditCase(c) ? { label: "Avançar estágio", icon: "arrowR", action: () => advanceStage(c) } : null,
+        canEditCase(c) ? { label: "Editar", icon: "edit", action: () => openCaseModal(c, { onSaved: onChanged }) } : null,
+        canEditCase(c) ? { label: "Avançar estágio", icon: "arrowR", action: async () => { await advanceStage(c); await onChanged?.(); } } : null,
         isAdmin() ? "-" : null,
-        isAdmin() ? { label: "Excluir", icon: "trash", danger: true, action: () => deleteCase(c) } : null,
+        isAdmin() ? { label: "Excluir", icon: "trash", danger: true, action: () => deleteCase(c, onChanged) } : null,
     ].filter(Boolean);
 }
 
@@ -154,23 +154,27 @@ export async function moveStage(id, next, silentToast) {
     if (!silentToast) toast(`${c.code}: ${prev} → ${next}`, { type: "info", title: "Estágio atualizado" });
 }
 
-async function deleteCase(c) {
+async function deleteCase(c, onChanged) {
     if (!isAdmin()) return toast("Somente o administrador pode excluir casos", { type: "warning", title: "Ação bloqueada" });
     if (!(await confirmDialog({ title: "Excluir caso", message: `O caso "${c.title}" e suas movimentações serão removidos. Esta ação não pode ser desfeita.`, confirmText: "Excluir" }))) return;
     await del("cases", c.id);
     toast("Caso excluído", { type: "success" });
-    if (location.hash.startsWith("#/casos/")) navigate("casos"); else renderCasesRefresh();
+    if (onChanged) await onChanged();
+    else if (location.hash.startsWith("#/casos/")) navigate("casos");
+    else renderCasesRefresh();
 }
 function renderCasesRefresh() { const v = document.querySelector(".view-inner"); if (v && location.hash.startsWith("#/casos")) renderCases(v); }
 
 /* ============================ CREATE / EDIT ============================ */
-export async function openCaseModal(existing) {
-    if ((existing && !canEditCase(existing)) || (!existing && !canCreateCase())) {
+export async function openCaseModal(existing, options = {}) {
+    const persisted = existing?.id ? existing : null;
+    if ((persisted && !canEditCase(persisted)) || (!persisted && !canCreateCase())) {
         toast("Seu perfil não permite alterar este caso", { type: "warning", title: "Somente leitura" });
         return;
     }
     if (!usersCache.length) usersCache = await all("users");
-    const c = existing ? { ...existing } : { status: "Registro", priority: "Média", type: "Homicídio", tags: [] };
+    const defaults = options.defaults || (!persisted && existing ? existing : {});
+    const c = persisted ? { ...persisted } : { status: "Registro", priority: "Média", type: "Homicídio", tags: [], ...defaults };
     const F = {};
     const field = (label, node) => el("div.field", {}, [el("label", { text: label }), node]);
     const input = (k, ph) => (F[k] = el("input.input", { value: c[k] || "", placeholder: ph || "" }));
@@ -194,7 +198,7 @@ export async function openCaseModal(existing) {
     ]);
 
     const m = modal({
-        title: existing ? "Editar caso" : "Novo caso", body: form, wide: true,
+        title: persisted ? "Editar caso" : "Novo caso", body: form, wide: true,
         footer: [
             el("button.btn.ghost", { text: "Cancelar", onclick: () => m.close() }),
             el("button.btn.primary", { html: icon("check") + "Salvar", onclick: save }),
@@ -205,7 +209,7 @@ export async function openCaseModal(existing) {
         const title = F.title.value.trim();
         if (title.length < 3) { F.title.parentElement.classList.add("err"); toast("Informe um título válido", { type: "error" }); return; }
         const [city, state] = (F.city.value || "São Paulo|SP").split("|");
-        const isNew = !existing;
+        const isNew = !persisted;
         const rec = {
             id: c.id || uid("c"),
             code: c.code || nextCode(city),
@@ -219,7 +223,9 @@ export async function openCaseModal(existing) {
         await put("cases", rec);
         m.close();
         toast(isNew ? `Caso ${rec.code} criado` : "Caso atualizado", { type: "success", title: isNew ? "Novo caso" : "Salvo" });
-        if (isNew) navigate("casos/" + rec.id); else renderCasesRefresh();
+        await options.onSaved?.(rec, { isNew });
+        if (isNew && options.navigateAfterSave !== false) navigate("casos/" + rec.id);
+        else if (!options.onSaved) renderCasesRefresh();
     }
     setTimeout(() => F.title.focus(), 50);
 }
@@ -305,13 +311,12 @@ export function openCaseLinks(caseInput, peopleInput, evidenceInput, { onChanged
     let caseRecord = caseInput;
     let people = peopleInput;
     let evidence = evidenceInput;
-    let dirty = false;
     const body = el("div.case-link-manager");
     const personSelect = el("select.input");
     const roleSelect = el("select.input", {}, [...PERSON_ROLES, "Relacionado à evidência"].map(role => el("option", { value: role, text: role })));
     const evidenceSelect = el("select.input");
 
-    const finish = async () => { m.close(); if (dirty) await onChanged?.(); };
+    const finish = () => m.close();
     const m = modal({ title: `Vínculos · ${caseRecord.code}`, body, wide: true, footer: [
         el("button.btn.ghost", { html: icon("user") + "Nova pessoa", onclick: () => { m.close(); openPersonModal(null, { caseId: caseRecord.id, role: roleSelect.value, onSaved: onChanged }); } }),
         el("button.btn.ghost", { html: icon("box") + "Nova evidência", onclick: () => { m.close(); openEvModal(null, { caseId: caseRecord.id, onSaved: onChanged }); } }),
@@ -321,6 +326,11 @@ export function openCaseLinks(caseInput, peopleInput, evidenceInput, { onChanged
     async function refresh() {
         [caseRecord, people, evidence] = await Promise.all([get("cases", caseRecord.id), all("people"), all("evidence")]);
         paint();
+    }
+
+    async function syncView() {
+        await refresh();
+        await onChanged?.();
     }
 
     function paint() {
@@ -344,11 +354,11 @@ export function openCaseLinks(caseInput, peopleInput, evidenceInput, { onChanged
                         personPortrait(link.person, "mini-person-photo"),
                         el("div", {}, [el("b", { text: link.person.name }), el("small", { text: link.role })]),
                         el("button.icon-btn", { "data-tip": "Editar pessoa e fotos", html: icon("edit"), onclick: () => { m.close(); openPersonModal(link.person, { onSaved: onChanged }); } }),
-                        el("button.icon-btn", { "data-tip": "Retirar do caso", html: icon("x"), onclick: async () => { caseRecord.people = caseRecord.people.filter(item => item.personId !== link.person.id); await put("cases", caseRecord); dirty = true; toast("Pessoa retirada do mural", { type: "info" }); await refresh(); } }),
+                        el("button.icon-btn", { "data-tip": "Retirar do caso", html: icon("x"), onclick: async () => { caseRecord.people = caseRecord.people.filter(item => item.personId !== link.person.id); await put("cases", caseRecord); toast("Pessoa retirada do mural", { type: "info" }); await syncView(); } }),
                     ])) : [el("p.muted", { text: "Nenhuma pessoa vinculada." })]),
                     el("div.link-manager-add", {}, [
                         personSelect, roleSelect,
-                        el("button.btn", { html: icon("plus") + "Vincular pessoa", onclick: async () => { if (!personSelect.value) return; caseRecord.people = caseRecord.people || []; caseRecord.people.push({ personId: personSelect.value, role: roleSelect.value }); await put("cases", caseRecord); dirty = true; toast("Pessoa adicionada ao mural", { type: "success" }); await refresh(); } }),
+                        el("button.btn", { html: icon("plus") + "Vincular pessoa", onclick: async () => { if (!personSelect.value) return; caseRecord.people = caseRecord.people || []; caseRecord.people.push({ personId: personSelect.value, role: roleSelect.value }); await put("cases", caseRecord); toast("Pessoa adicionada ao mural", { type: "success" }); await syncView(); } }),
                     ]),
                 ]),
                 el("section", {}, [
@@ -357,7 +367,7 @@ export function openCaseLinks(caseInput, peopleInput, evidenceInput, { onChanged
                         evidencePhoto(item, "link-manager-evidence"),
                         el("div", {}, [el("b", { text: item.title }), el("small.mono", { text: `${item.code} · ${item.type}` })]),
                         el("button.icon-btn", { "data-tip": "Editar evidência e fotos", html: icon("edit"), onclick: () => { m.close(); openEvModal(item, { onSaved: onChanged }); } }),
-                        el("button.icon-btn", { "data-tip": "Retirar do caso", html: icon("x"), onclick: async () => { item.caseId = ""; await put("evidence", item); dirty = true; toast("Evidência retirada do mural", { type: "info" }); await refresh(); } }),
+                        el("button.icon-btn", { "data-tip": "Retirar do caso", html: icon("x"), onclick: async () => { item.caseId = ""; await put("evidence", item); toast("Evidência retirada do mural", { type: "info" }); await syncView(); } }),
                     ])) : [el("p.muted", { text: "Nenhuma evidência vinculada." })]),
                     el("div.link-manager-add", {}, [
                         evidenceSelect,
@@ -366,7 +376,7 @@ export function openCaseLinks(caseInput, peopleInput, evidenceInput, { onChanged
                             item.caseId = caseRecord.id; await put("evidence", item);
                             caseRecord.people = caseRecord.people || [];
                             (item.personIds || []).forEach(personId => { if (!caseRecord.people.some(link => link.personId === personId)) caseRecord.people.push({ personId, role: "Relacionado à evidência" }); });
-                            await put("cases", caseRecord); dirty = true; toast("Evidência adicionada ao mural", { type: "success" }); await refresh();
+                            await put("cases", caseRecord); toast("Evidência adicionada ao mural", { type: "success" }); await syncView();
                         } }),
                     ]),
                 ]),
